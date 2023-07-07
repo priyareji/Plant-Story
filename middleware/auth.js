@@ -21,7 +21,16 @@ const isLogout = async (req, res, next) => {
     console.log(error.message);
   }
 };
+
+const adminAuth = async (req, res, next) => {
+  if (req.session.admin) {
+    next();
+  } else {
+    res.render("admin/login", { layout: "adminlayout" });
+  }
+};
 module.exports = {
   isLogin,
   isLogout,
+  adminAuth,
 };

@@ -97,10 +97,11 @@
 
 </style>
 {{>user-header}}
+
 <div class="container">
   <div class="row">
     <div class="col-md-4">
-      <button type="button" class="btn btn-success add-address-button" data-toggle="modal"
+      <button type="button" class="btn btn-primary add-address-button" data-toggle="modal"
         data-target="#exampleModalLong">
         Add address
       </button>
@@ -169,7 +170,7 @@
       </div>
       <div class="modal-body">
 
-        <form action="/edit-address" method="post">
+        <form action="/address-edit" method="post">
           <div class="form-group">
             <label for="edit-username">Name</label>
             <input type="text" class="form-control" name="name" id="edit-name" value="{{this.name}}" required>
@@ -298,3 +299,61 @@
   </section>
 </section>
 {{/if}}
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Set the address details in the edit modal when the edit button is clicked
+    $('.edit-button').click(function () {
+
+      var name = $(this).data('name');
+      var mobile = $(this).data('mobile');
+      var homeAddress = $(this).data('homeaddress');
+      var city = $(this).data('city');
+      var street = $(this).data('street');
+      var postalCode = $(this).data('postalcode');
+      var _id = $(this).data('_id');
+
+      $('#edit-name').val(name);
+      $('#edit-mobile').val(mobile);
+      $('#edit-homeAddress').val(homeAddress);
+      $('#edit-city').val(city);
+      $('#edit-street').val(street);
+      $('#edit-postalCode').val(postalCode);
+      $('#edit-_id').val(_id);
+    });
+  });
+</script>
+
+<script>
+  function setAsDefault(addressId) {
+   
+
+ fetch('/set-as-default', {
+  method: 'POST',
+  body: JSON.stringify({
+    addressId: addressId,
+  }),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+  .then((response) => {
+    if (response.status) {
+
+      location.reload();
+      
+    } else {
+      throw new Error('Request failed.');
+    }
+  })
+  .catch((error) => {
+    // Handle error
+    console.error(error);
+  });
+
+
+  }
+  </script>

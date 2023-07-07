@@ -9,6 +9,7 @@ const config = require("../config/config");
 router.use(session({ secret: config.sessionSecret }));
 const auth = require("../middleware/auth");
 const userController = require("../controllers/userController");
+const couponController = require("../controllers/couponController");
 /* GET users listing. */
 // router.get("/", function (req, res, next) {
 //   res.send("respond with a resource");
@@ -48,8 +49,23 @@ router.get("/address", auth.isLogin, userController.loadAddressList);
 router.post("/address", userController.addingAddress);
 router.post("/add-new-address", userController.addingNewAddress);
 router.get("/delete-address", auth.isLogin, userController.deletingAddress);
-router.post("/edit-address", userController.changingTheAddress);
+router.post("/change-address", userController.changingTheAddress);
 router.post("/set-as-default", userController.settingAsDefault);
 router.get("/checkout", auth.isLogin, userController.loadingCheckoutPage);
+router.post("/address-edit", auth.isLogin, userController.editingAddress);
+
+//router.post("/cancellingOrder", auth.isLogin, userController.cancellingOrder);
+router.post("/place-order", auth.isLogin, userController.placeOrder);
+router.get("/order-details", auth.isLogin, userController.orderDetails);
+router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
+router.post("/cancel-order", userController.cancellOrder);
+router.post("/verify-payment", userController.verifyPayment);
+router.get("/orderPlaced", auth.isLogin, userController.orderPlaced);
+router.get("/orderFailed", auth.isLogin, userController.orderFailed);
+router.get("/coupon-verify/:id", auth.isLogin, couponController.verifyCoupon);
+router.get("/apply-coupon/:id", auth.isLogin, couponController.applyCoupon);
+// router.get("/order-details", auth.isLogin, userController.orderDetails);
+// router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
+// router.post("/cancel-order", userController.cancellOrder);
 
 module.exports = router;
