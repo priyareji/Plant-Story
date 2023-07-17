@@ -91,11 +91,13 @@ module.exports = {
 
   verifyOnlinePayment: (paymentData) => {
     // console.log(paymentData);
-
+    console.log(
+      "vrifyinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
+    );
     return new Promise((resolve, reject) => {
       const crypto = require("crypto"); // Requiring crypto Module here for generating server signature for payments verification
 
-      let razorpaySecretKey = "yg5JyFNX5hUiz5nnVp3xRZjl";
+      let razorpaySecretKey = "CpMAeOoo1SEci1tr6OXJm7pe";
 
       let hmac = crypto.createHmac("sha256", razorpaySecretKey); // Hashing Razorpay secret key using SHA-256 Algorithm
 
@@ -130,32 +132,36 @@ module.exports = {
 
   updateOnlineOrderPaymentStatus: (ordersCollectionId, onlinePaymentStatus) => {
     return new Promise(async (resolve, reject) => {
-      if (onlinePaymentStatus) {
-        const orderUpdate = await Order.findByIdAndUpdate(
-          { _id: new ObjectId(ordersCollectionId) },
-          { $set: { orderStatus: "Placed" } }
-        ).then(() => {
-          resolve();
-        });
-      } else {
-        const orderUpdate = await Order.findByIdAndUpdate(
-          { _id: new ObjectId(ordersCollectionId) },
-          { $set: { orderStatus: "Failed" } }
-        ).then(() => {
-          resolve();
-        });
+      try {
+        if (onlinePaymentStatus) {
+          const orderUpdate = await Order.findByIdAndUpdate(
+            { _id: new ObjectId(ordersCollectionId) },
+            { $set: { orderStatus: "Placed" } }
+          ).then(() => {
+            resolve();
+          });
+        } else {
+          const orderUpdate = await Order.findByIdAndUpdate(
+            { _id: new ObjectId(ordersCollectionId) },
+            { $set: { orderStatus: "Failed" } }
+          ).then(() => {
+            resolve();
+          });
+        }
+      } catch (error) {
+        reject(error);
       }
     });
   },
   placingOrder: async (userId, orderData, orderedProducts, totalOrderValue) => {
     let orderStatus =
       orderData["paymentMethod"] === "COD" ? "Placed" : "Pending";
-
+    console.log(orderedProducts, "0000000000000000000000000000000000000000000");
     const defaultAddress = await Address.findOne(
       { user_id: userId, "address.isDefault": true },
       { "address.$": 1 }
     ).lean();
-    console.log(defaultAddress, "default address");
+    // console.log(defaultAddress, "default address");
 
     if (!defaultAddress) {
       console.log("Default address not found");
@@ -171,7 +177,7 @@ module.exports = {
       street: defaultAddressDetails.street,
       postalCode: defaultAddressDetails.postalCode,
     };
-    console.log(address, "address");
+    //console.log(address, "address");
 
     const orderDetails = new Order({
       userId: userId,
@@ -185,13 +191,29 @@ module.exports = {
 
     const placedOrder = await orderDetails.save();
 
-    console.log(placedOrder, "placedOrder");
+    // Reduce the product counts
+    for (const orderedProduct of orderedProducts) {
+      const productId = orderedProduct.productId;
+      const quantity = orderedProduct.quantity;
 
+      // Update the product count in the database
+      await Product.findOneAndUpdate(
+        { _id: productId },
+        { $inc: { stock: -quantity } }
+      );
+    }
+
+    //  const productIds = product.map((obj) => obj.productId);
     // Remove the products from the cart
     await Cart.deleteMany({ user_id: userId });
 
+    // if (orderData["paymentMethod"] === "online") {
+    // } else {
+    //   await Product.findByIdAndUpdate({});
+    // }
+
     let dbOrderId = placedOrder._id.toString();
-    console.log(dbOrderId, "order id in stringggggggggggggggggggggggggggg");
+
     return dbOrderId;
   },
   totalCheckOutAmount: (userId) => {
@@ -269,4 +291,150 @@ module.exports = {
   //     console.log(error.message);
   //   }
   // }
+  loadingOrdersViews: async (req, res) => {
+    try {
+      const orderId = req.query.id;
+
+      const userId = req.session.user_id;
+
+      console.log(orderId, "orderId when loading page");
+      const order = await Order.findOne({ _id: orderId }).populate({
+        path: "products.productId",
+        select: "name price image",
+      });
+
+      const createdOnIST = moment(order.date)
+        .tz("Asia/Kolkata")
+        .format("DD-MM-YYYY h:mm A");
+      order.date = createdOnIST;
+
+      const orderDetails = order.products.map((product) => {
+        const images = product.productId.image || []; // Set images to an empty array if it is undefined
+        const image = images.length > 0 ? images[0] : ""; // Take the first image from the array if it exists
+
+        return {
+          name: product.productId.name,
+          image: image,
+          price: product.productId.price,
+          total: product.total,
+          quantity: product.quantity,
+          status: order.orderStatus,
+        };
+      });
+      // Pagination logic
+      const itemsPerPage = 10;
+      const currentPage = req.query.page || 1;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedItems = orderDetails.slice(startIndex, endIndex);
+      const totalPages = Math.ceil(orderDetails.length / itemsPerPage);
+
+      // Prepare the data for your Handlebars template
+      // const templateData = {
+      //   orderDetails: paginatedItems,
+      //   totalPages: totalPages,
+      //   currentPage: parseInt(currentPage),
+      // };
+
+      const deliveryAddress = {
+        name: order.addressDetails.name,
+        homeAddress: order.addressDetails.homeAddress,
+        city: order.addressDetails.city,
+        street: order.addressDetails.street,
+        postalCode: order.addressDetails.postalCode,
+      };
+
+      const subtotal = order.orderValue;
+      const total = order.orderValue + order.couponDiscount;
+      const discountAmount = order.couponDiscount;
+
+      const cancellationStatus = order.cancellationStatus;
+      console.log(cancellationStatus, "cancellationStatus");
+
+      //console.log(subtotal, "subtotal");
+
+      console.log(orderDetails, "orderDetails");
+      console.log(deliveryAddress, "deliveryAddress");
+
+      res.render("users/ordersView", {
+        layout: "userlayout",
+        orderDetails: paginatedItems,
+        totalPages: totalPages,
+        currentPage: parseInt(currentPage),
+        deliveryAddress: deliveryAddress,
+        subtotal: subtotal,
+        total: total,
+        orderId: orderId,
+        discountAmount: discountAmount,
+        orderDate: createdOnIST,
+        cancellationStatus: cancellationStatus,
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  // cancellingOrder: async (requestData) => {
+  //   try {
+  //     const orderId = requestData;
+
+  //     const updateOrder = await Order.findByIdAndUpdate(
+  //       { _id: new ObjectId(orderId) },
+  //       { $set: { cancellationStatus: "cancellation requested" } }
+  //     );
+
+  //     return updateOrder;
+  //   } catch (error) {
+  //     throw new Error(error.message);
+  //   }
+  // },
+  cancellingOrder: async (requestData) => {
+    try {
+      const orderId = requestData;
+
+      const updateOrder = await Order.findByIdAndUpdate(
+        { _id: new ObjectId(orderId) },
+        { $set: { cancellationStatus: "cancellation requested" } }
+      );
+
+      return updateOrder;
+    } catch (error) {
+      console.log(error.message);
+
+      res.redirect("/user-error");
+    }
+  },
+  returningOrder: async (requestData) => {
+    try {
+      const orderId = requestData;
+
+      const updateOrder = await Order.findByIdAndUpdate(
+        { _id: new ObjectId(orderId) },
+        {
+          $set: {
+            orderStatus: "Return placed",
+            cancellationStatus: "return placed",
+          },
+        }
+      );
+
+      return updateOrder;
+    } catch (error) {
+      console.log(error.message);
+
+      res.redirect("/user-error");
+    }
+  },
+  productsByPlant: () => {
+    try {
+      return new Promise(async (resolve, reject) => {
+        await Product.find({ category: "Plants" }).then((product) => {
+          resolve(product);
+        });
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  },
 };

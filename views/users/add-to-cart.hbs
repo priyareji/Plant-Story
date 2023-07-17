@@ -25,6 +25,9 @@
     <link rel="stylesheet" href="/stylesheets/css/flaticon.css">
     <link rel="stylesheet" href="/stylesheets/css/icomoon.css">
     <link rel="stylesheet" href="/stylesheets/css/style.css">
+	
+    <!-- Include other necessary CSS and JavaScript files -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
   
   <div class="goto-here">
 	{{>user-header}}
@@ -89,7 +92,9 @@
  <button id="decrement-btn" class="decrement-btn" style="background: transparent;" onclick="changeQuantity('{{this._id}}', -1, '{{this.user_id}}', {{this.quantity}})">-</button>
 <input type="text" id="quantity{{this._id}}" name="quantity" value="{{this.quantity}}" min="1" max="100" readonly>
 <button id="increment-btn" class="increment-btn" style="background: transparent;" onclick="changeQuantity('{{this._id}}', 1, '{{this.user_id}}', {{this.quantity}})">+</button>
-
+{{#if  message}}
+        <p style="color:green;">{{message}}</p>
+                                {{/if}}
                               </td>
                              
 						        
@@ -305,6 +310,9 @@
   <script src="/javascripts/js/google-map.js"></script>
   <script src="/javascripts/js/main.js"></script>
 
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+
+
   {{!-- <script>
 		$(document).ready(function(){
 
@@ -343,43 +351,117 @@
 	</script> --}}
     
   <script>
-  function changeQuantity(proId, count, userId, quantity) {
-   console.log("clicked")
+function changeQuantity(proId, count, userId, quantity) {
+  console.log("clicked");
 
-    $.ajax({
-      url: "/change-product-quantity",
-      method: "post",
-      data: {
-        productId: proId,
-        count: count,
-        userId: userId,
-        quantity: quantity,
-      },
+  $.ajax({
+    url: "/change-product-quantity",
+    method: "post",
+    data: {
+      productId: proId,
+      count: count,
+      userId: userId,
+      quantity: quantity,
+    },
     success: (response) => {
-        console.log(response)
-       if(response.deleteProduct){
-          location.reload(); // Reload the page
-       }else{
-             console.log(response,'ajax response')
+      console.log(response);
+      if (response.deleteProduct) {
+        location.reload(); // Reload the page
+      } 
+	else if(response.outOfStock){
+		 showSweetAlert(
+          "Insufficient Stock",
+          "Product is out of stock",
+          "warning"
+        );
+
+	}
+	  else {
+        console.log(response, 'ajax response');
         const quantityInput = document.getElementById(`quantity${proId}`);
         quantityInput.value = response.quantity;
 
-const productTotal = document.querySelector(`#productTotal_${proId}`);
+        const productTotal = document.querySelector(`#productTotal_${proId}`);
         productTotal.textContent = response.productTotal;
 
         const subtotal = document.getElementById(`summary`);
         subtotal.textContent = response.subtotal;
 
         const summarySubtotal = document.getElementById(`summary-subtotal`);
-        summarySubtotal.textContent = response.subtotal
-        
-       }
-     
-        
+        summarySubtotal.textContent = response.subtotal;
       }
-       
-    
-    })
-  }
+
+      if (response.error) {
+        showSweetAlert("Error", response.message, "error");
+      } else if (response.stock < response.quantity) {
+        showSweetAlert(
+          "Insufficient Stock",
+          "Product is out of stock",
+          "warning"
+        );
+      }
+    },
+    error: (error) => {
+      console.log(error);
+      showSweetAlert("Error", "An error occurred", "error");
+    }
+  });
+}
   
+
+function showSweetAlert(title, text, icon) {function showSweetAlert(title, text, icon) {
+  Swal.fire({
+    title: title,
+    text: text,
+    icon: icon,
+    showCancelButton: false,
+    confirmButtonColor: "#000000",
+    confirmButtonText: "OK",
+    customClass: {
+      container: "swal-container",
+      title: "swal-title",
+      content: "swal-text",
+      confirmButton: "swal-button"
+    },
+    onOpen: () => {
+      // Set the text color to white
+      const swalContainer = document.querySelector(".swal-container");
+      swalContainer.style.color = "white";
+
+      // Remove the border from the OK button
+      const okButton = document.querySelector(".swal-button");
+      okButton.style.border = "none";
+    }
+  });
+}
+//Make sure you have the necessary CSS and JavaScript files for the SweetAlert library included in your HTML file.
+
+  Swal.fire({
+    title: title,
+    text: text,
+    icon: icon,
+    showCancelButton: false,
+    confirmButtonColor: "#000000",
+    confirmButtonText: "OK",
+    customClass: {
+      container: "swal-container",
+      title: "swal-title",
+      content: "swal-text",
+      confirmButton: "swal-button"
+    },
+    onOpen: () => {
+      // Set the text color to white
+      const swalContainer = document.querySelector(".swal-container");
+      swalContainer.style.color = "white";
+
+      // Remove the border from the OK button
+      const okButton = document.querySelector(".swal-button");
+      okButton.style.border = "none";
+    }
+  });
+}
+
   </script>
+ 
+
+  

@@ -20,6 +20,9 @@
     <link rel="stylesheet" href="/stylesheets/css/flaticon.css">
     <link rel="stylesheet" href="/stylesheets/css/icomoon.css">
     <link rel="stylesheet" href="/stylesheets/css/style.css">
+    
+     <!-- Include other necessary CSS and JavaScript files -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
   <style>
      .secondary-images {
     display: flex;
@@ -138,7 +141,7 @@
 	          		<p style="color: #000;">600 kg available</p>
 	          	</div> --}}
           	</div>
-          	<p><a href="" class="btn btn-black py-3 px-5" onclick="addToCart('{{product._id}}',event), showSweetAlert()">Add to Cart</a></p>
+          	<p><a href="" class="btn btn-black py-3 px-5" onclick="addToCart('{{product._id}}',event)">Add to Cart</a></p>
     			{{!-- onclick="addToCart('{{product._id}}',event), showSweetAlert()">Add To Cart --}}
                 </div>
     		
@@ -164,7 +167,7 @@
     			<div class="col-md-6 col-lg-3 ftco-animate">
     				<div class="product">
 						
-    					<a href="/single-page?id={{_id}}" class="img-prod"><img class="img-fluid" src="/uploads/{{image}}" alt="Colorlib Template">
+    					<a href="/single-page?id={{_id}}" class="img-prod"><img class="img-fluid" src="/uploads/{{image.[0]}}" alt="Colorlib Template">
     						<span class="status">30%</span>
     						<div class="overlay"></div>
     					</a>
@@ -316,6 +319,9 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
   <script src="/javascripts/js/google-map.js"></script>
   <script src="/javascripts/js/main.js"></script>
+  <!-- Include other necessary JavaScript files -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+  <script>
 
   <script>
 function changeMainImage(imageUrl) {
@@ -369,9 +375,9 @@ function changeMainImage(imageUrl) {
    // console.log(clicked)
    //     }
 	</script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
   <script> 
-function addToCart(productId, event) {
+ function addToCart(productId, event) {
   event.preventDefault(); // Prevent the default behavior of the <a> tag
 
   // Send an AJAX request to the server
@@ -379,20 +385,50 @@ function addToCart(productId, event) {
   xhr.open('POST', '/add-cart', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      // Handle the server response here (if needed)
-      swal("Success", "Product added to cart!", "success");
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        // Handle the success response here
+        showSweetAlert("Success", "Product added to cart!", "success");
+      } else if (xhr.status === 400) {
+        // Handle the error response for out of stock
+        showSweetAlert("Oops", "Product is out of stock", "error");
+      } else {
+        // Handle other error responses (if needed)
+        console.log("Request error:", xhr.status);
+      }
     }
   };
-  xhr.onerror = function() {
-  console.log("Request error");
-};
 
   xhr.send(JSON.stringify({ productId: productId }));
 }
 
+function showSweetAlert(title, text, icon) {
+  Swal.fire({
+    title: title,
+    text: text,
+    icon: icon,
+    showCancelButton: false,
+    confirmButtonColor: "#000000",
+    confirmButtonText: "OK",
+    customClass: {
+      container: "swal-container",
+      title: "swal-title",
+      content: "swal-text",
+      confirmButton: "swal-button"
+    },
+    onOpen: () => {
+      // Set the text color to white
+      const swalContainer = document.querySelector(".swal-container");
+      swalContainer.style.color = "white";
 
-function showSweetAlert() {
+      // Remove the border from the OK button
+      const okButton = document.querySelector(".swal-button");
+      okButton.style.border = "none";
+    }
+  });
+}
+
+function showSuccessSweetAlert() {
     console.log("clicked")
   Swal.fire({
     title: "Success",
@@ -419,4 +455,33 @@ function showSweetAlert() {
   });
 }
 
+function showErrorSweetAlert() {
+    console.log("clicked")
+  Swal.fire({
+    title: "Failed",
+    text: "OOps ! Product is out of stock",
+    icon: "danger",
+    showCancelButton: false,
+    confirmButtonColor: "#000000",
+    confirmButtonText: "OK",
+    customClass: {
+      container: "swal-container",
+      title: "swal-title",
+      content: "swal-text",
+      confirmButton: "swal-button"
+    },
+    onOpen: () => {
+      // Set the text color to white
+      const swalContainer = document.querySelector(".swal-container");
+      swalContainer.style.color = "white";
+
+      // Remove the border from the OK button
+      const okButton = document.querySelector(".swal-button");
+      okButton.style.border = "none";
+    }
+  });
+}
+
 </script>
+<!-- Include other necessary JavaScript files -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>

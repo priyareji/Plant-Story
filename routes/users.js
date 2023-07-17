@@ -36,6 +36,14 @@ router.get(
 router.post("/forget-password", userController.resetPassword);
 router.get("/forget-password", userController.resetPassword);
 router.get("/single-page", auth.isLogin, userController.viewSinglepage);
+router.get("/productByPlant", auth.isLogin, userController.getProductByPlant);
+router.get("/productBySeed", auth.isLogin, userController.getProductBySeed);
+router.get("/productByPot", auth.isLogin, userController.getProductByPot);
+router.get(
+  "/productByPlantcare",
+  auth.isLogin,
+  userController.getProductByPlantcare
+);
 router.post("/add-cart", auth.isLogin, userController.addToCart);
 router.get("/addtocart", auth.isLogin, userController.viewaddToCart);
 router.post(
@@ -59,11 +67,14 @@ router.post("/place-order", auth.isLogin, userController.placeOrder);
 router.get("/order-details", auth.isLogin, userController.orderDetails);
 router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
 router.post("/cancel-order", userController.cancellOrder);
+router.post("/return-order", userController.returnOrder);
+
 router.post("/verify-payment", userController.verifyPayment);
 router.get("/orderPlaced", auth.isLogin, userController.orderPlaced);
 router.get("/orderFailed", auth.isLogin, userController.orderFailed);
 router.get("/coupon-verify/:id", auth.isLogin, couponController.verifyCoupon);
 router.get("/apply-coupon/:id", auth.isLogin, couponController.applyCoupon);
+router.get("/searchProduct", auth.isLogin, userController.searchProduct);
 // router.get("/order-details", auth.isLogin, userController.orderDetails);
 // router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
 // router.post("/cancel-order", userController.cancellOrder);

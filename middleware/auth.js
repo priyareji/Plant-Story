@@ -22,7 +22,7 @@ const isLogout = async (req, res, next) => {
   }
 };
 
-const adminAuth = async (req, res, next) => {
+const adminLogin = async (req, res, next) => {
   if (req.session.admin) {
     next();
   } else {
@@ -32,5 +32,5 @@ const adminAuth = async (req, res, next) => {
 module.exports = {
   isLogin,
   isLogout,
-  adminAuth,
+  adminLogin,
 };

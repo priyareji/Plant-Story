@@ -9,6 +9,7 @@ const multer = require("multer");
 const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
 const bodyParser = require("body-parser");
+const handlebars_helpers = require("handlebars-helpers");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.engine(
     extname: "hbs",
     layoutsDir: __dirname + "/views/layout/",
     partialsDir: __dirname + "/views/partials/",
+    helpers: handlebars_helpers(),
   })
 );
 

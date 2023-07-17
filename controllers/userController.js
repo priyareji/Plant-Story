@@ -16,6 +16,22 @@ var instance = new Razorpay({
   key_id: "rzp_test_geVs1Kqnz5ziUc",
   key_secret: "CpMAeOoo1SEci1tr6OXJm7pe",
 });
+const handlebars = require("handlebars");
+
+// Define the range helper
+handlebars.registerHelper("range", function (start, end) {
+  const range = [];
+  for (let i = start; i <= end; i++) {
+    range.push(i);
+  }
+  return range;
+});
+
+const options = {
+  allowProtoPropertiesByDefault: true,
+};
+
+//const template = handlebars.compile(yourTemplateString, options);
 
 //for send mail
 const sendVerifyMail = async (name, email, user_id) => {
@@ -358,6 +374,10 @@ const loadHome = async (req, res) => {
     const productData = await Product.find({ is_activate: true }).lean();
     const categoryData = await Category.find({ is_activate: true }).lean();
     const check = await Cart.findOne({ user_id: req.session.user_id });
+    //let user = await User.findOne({ user_id: req.session.user_id });
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    console.log(user, "user0000000000000000000000000000");
     let sumOfQuantities = 0;
     if (check) {
       const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
@@ -368,6 +388,7 @@ const loadHome = async (req, res) => {
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
     res.render("users/home", {
       layout: "userlayout",
+      user,
       products: productData,
       category: categoryData,
       sumOfQuantities,
@@ -435,6 +456,8 @@ const viewSinglepage = async (req, res) => {
     }
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
     // const categoryData = await Category.find({ is_activate: true }).lean();
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
     console.log("products", productData);
     if (productData) {
       res.render("users/single-product", {
@@ -442,6 +465,7 @@ const viewSinglepage = async (req, res) => {
         product: productData,
         products: products,
         sumOfQuantities,
+        user,
 
         // category: categoryData,
       });
@@ -453,6 +477,168 @@ const viewSinglepage = async (req, res) => {
   }
 };
 
+const searchProduct = async (req, res) => {
+  try {
+    const searchTerm = req.query.search; // Get the search term from the query parameters
+
+    // const productData = await Product.find({
+    //   is_activate: true,
+    //   productname: searchTerm,
+    // }).lean();
+    let products = await Product.find({
+      productname: { $regex: searchTerm, $options: "i" },
+    }).lean();
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    res.render("users/search-product", {
+      layout: "userlayout",
+      products,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const getProductByPlant = async (req, res) => {
+  try {
+    const { category, minPrice, maxPrice, sort } = req.query;
+    let query = {
+      is_activate: true,
+      category: "Plants",
+    };
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (minPrice && maxPrice) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice) {
+      query.price = { $gte: minPrice };
+    } else if (maxPrice) {
+      query.price = { $lte: maxPrice };
+    }
+
+    let productData = await Product.find(query).lean();
+
+    if (sort === "price_asc") {
+      productData = productData.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      productData = productData.sort((a, b) => b.price - a.price);
+    } // Add more sorting options as needed
+
+    const categoryData = await Category.find({ is_activate: true }).lean();
+    const check = await Cart.findOne({ user_id: req.session.user_id });
+    let sumOfQuantities = 0;
+    if (check) {
+      const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
+      for (const product of cart.products) {
+        sumOfQuantities += product.quantity;
+      }
+    }
+    console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    res.render("users/plants", {
+      layout: "userlayout",
+      products: productData,
+      category: categoryData,
+      sumOfQuantities,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+///await Product.find({ category: "Plants" }).
+const getProductBySeed = async (req, res) => {
+  try {
+    const productData = await Product.find({
+      is_activate: true,
+      category: "Seeds",
+    }).lean();
+    const categoryData = await Category.find({ is_activate: true }).lean();
+    const check = await Cart.findOne({ user_id: req.session.user_id });
+    let sumOfQuantities = 0;
+    if (check) {
+      const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
+      for (const product of cart.products) {
+        sumOfQuantities += product.quantity;
+      }
+    }
+    console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    res.render("users/plants", {
+      layout: "userlayout",
+      products: productData,
+      category: categoryData,
+      sumOfQuantities,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const getProductByPot = async (req, res) => {
+  try {
+    const productData = await Product.find({
+      is_activate: true,
+      category: "Pots&Planters",
+    }).lean();
+    const categoryData = await Category.find({ is_activate: true }).lean();
+    const check = await Cart.findOne({ user_id: req.session.user_id });
+    let sumOfQuantities = 0;
+    if (check) {
+      const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
+      for (const product of cart.products) {
+        sumOfQuantities += product.quantity;
+      }
+    }
+    console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    res.render("users/home", {
+      layout: "userlayout",
+      products: productData,
+      category: categoryData,
+      sumOfQuantities,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const getProductByPlantcare = async (req, res) => {
+  try {
+    const productData = await Product.find({
+      is_activate: true,
+      category: "PlantCare",
+    }).lean();
+    const categoryData = await Category.find({ is_activate: true }).lean();
+    const check = await Cart.findOne({ user_id: req.session.user_id });
+    let sumOfQuantities = 0;
+    if (check) {
+      const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
+      for (const product of cart.products) {
+        sumOfQuantities += product.quantity;
+      }
+    }
+    console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
+    res.render("users/home", {
+      layout: "userlayout",
+      products: productData,
+      category: categoryData,
+      sumOfQuantities,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 //load Product
 // const productlist = async (req, res) => {
 //   try {
@@ -475,6 +661,8 @@ const addToCart = async (req, res) => {
     console.log(proId, "id is coming");
 
     let cart = await Cart.findOne({ user_id: req.session.user_id });
+    const product = await Product.findById(proId).select("stock price");
+    console.log(product, "product details");
 
     if (!cart) {
       let newCart = new Cart({ user_id: req.session.user_id, products: [] });
@@ -482,22 +670,43 @@ const addToCart = async (req, res) => {
       cart = newCart;
     }
 
-    const existingProductIndex = cart.products.findIndex((product) => {
-      return product.productId.toString() === proId;
-    });
+    const existingProductIndex = cart.products.findIndex(
+      (product) => product.productId.toString() === proId
+    );
 
-    if (existingProductIndex === -1) {
-      const product = await Product.findById(proId).lean();
-      const total = product.price; // Set the initial total to the price of the product
+    // Check if the product is out of stock
+    if (product.stock === 0) {
+      return res.status(400).json({ message: "Product is out of stock" });
+    }
+
+    // Check if the product is already in the cart
+    if (existingProductIndex !== -1) {
+      const existingProduct = cart.products[existingProductIndex];
+
+      // Check if adding one more of this product exceeds the available stock
+      if (existingProduct.quantity + 1 > product.stock) {
+        return res
+          .status(400)
+          .json({ message: "Product stock limit exceeded" });
+      }
+
+      // Increase the quantity and total of the existing product in the cart
+      existingProduct.quantity += 1;
+      existingProduct.total += product.price;
+    } else {
+      // Check if adding the product exceeds the available stock
+      if (1 > product.stock) {
+        return res
+          .status(400)
+          .json({ message: "Product stock limit exceeded" });
+      }
+
+      // Add the product to the cart with quantity and total
       cart.products.push({
         productId: proId,
         quantity: 1,
-        total, // Use the updated total value
+        total: product.price,
       });
-    } else {
-      cart.products[existingProductIndex].quantity += 1;
-      const product = await Product.findById(proId).lean();
-      cart.products[existingProductIndex].total += product.price; // Update the total by adding the price of the product
     }
 
     // Calculate the updated total amount for the cart
@@ -565,6 +774,8 @@ const viewaddToCart = async (req, res) => {
       // Get the total count of products
       const totalCount = products.length;
       console.log(totalCount);
+      let userid = req.session.user_id;
+      const user = await User.find({ _id: userid }).lean();
       res.render("users/add-to-cart", {
         layout: "userlayout",
         products,
@@ -573,6 +784,7 @@ const viewaddToCart = async (req, res) => {
         subtotal: total,
         finalAmount,
         sumOfQuantities,
+        user,
       });
     } else {
       res.render("users/add-to-cart", {
@@ -591,7 +803,9 @@ const changeProductQuantity = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.body.userId);
     const productId = new mongoose.Types.ObjectId(req.body.productId);
     const quantity = req.body.quantity;
+
     const cartFind = await Cart.findOne({ user_id: userId });
+    const productsData = await Product.findById(productId);
     const cartId = cartFind._id;
     const count = req.body.count;
     console.log(userId, "userId");
@@ -599,9 +813,13 @@ const changeProductQuantity = async (req, res) => {
     console.log(quantity, "quantity");
     console.log(cartId, "cartId");
     console.log(count, "count");
+    const stock = await Product.findById(productId).select("stock");
+    //const stock = products.stock;
+    console.log(stock.stock, "stock");
+    let cart;
 
     // Find the cart for the given user and product
-    const cart = await Cart.findOneAndUpdate(
+    cart = await Cart.findOneAndUpdate(
       { user_id: userId, "products.productId": productId },
       { $inc: { "products.$.quantity": count } },
       { new: true }
@@ -614,7 +832,8 @@ const changeProductQuantity = async (req, res) => {
     updatedProduct.total =
       updatedProduct.productId.price * updatedProduct.quantity;
     await cart.save();
-
+    const sumProductQuantityAndCount =
+      parseInt(updatedProduct.quantity) + parseInt(count);
     //   Check if the quantity is 0 or less
     if (updatedProduct.quantity <= 0) {
       // Remove the product from the cart
@@ -625,6 +844,29 @@ const changeProductQuantity = async (req, res) => {
       const response = { deleteProduct: true };
       res.send(response);
       return response;
+    }
+    const stocks = productsData.stock;
+    console.log(
+      sumProductQuantityAndCount,
+      stocks,
+      "sumProductQuantityAndCountttttttttttttttt"
+    );
+    if (updatedProduct.quantity > stocks) {
+      console.log("-----------------------------------------------------");
+      await cart.save();
+      const response = { outOfStock: true };
+      res.send(response);
+      return response;
+    }
+
+    // check if stock is out of stock
+    if (updatedProduct.quantity > stock) {
+      return res
+        .status(200)
+        .json({ error: true, message: "Product is out of stock" });
+    }
+    if (quantity > stock) {
+      return res.status(400).json({ error: "Insufficient stock" });
     }
 
     // Calculate the new subtotal for all products in the cart
@@ -648,6 +890,7 @@ const changeProductQuantity = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const viewuserProfile = async (req, res) => {
   try {
     console.log(req.session.user_id);
@@ -1019,7 +1262,8 @@ const loadingCheckoutPage = async (req, res) => {
     const finalAmount = total;
     // Get the total count of products
     const totalCount = products.length;
-
+    let userid = req.session.user_id;
+    const user = await User.find({ _id: userid }).lean();
     res.render("users/checkout", {
       layout: "userlayout",
       defaultAddress: defaultAddress ? defaultAddress.address[0] : null, // Add a conditional check for defaultAddress
@@ -1029,6 +1273,7 @@ const loadingCheckoutPage = async (req, res) => {
       totalCount,
       subtotal: total,
       finalAmount,
+      user,
     });
   } catch (error) {
     throw new Error(error.message);
@@ -1193,7 +1438,9 @@ const orderFailed = async (req, res) => {
 const orderDetails = async (req, res) => {
   try {
     const userId = req.session.user_id;
-    const orderDetails = await Order.find({ userId: userId }).lean();
+    const orderDetails = await Order.find({ userId: userId })
+      .sort({ date: -1 })
+      .lean();
     orderHistory = orderDetails.map((history) => {
       let createdOnIST = moment(history.date)
         .tz("Asia/kolkata")
@@ -1203,102 +1450,159 @@ const orderDetails = async (req, res) => {
     });
 
     console.log(orderDetails, "orderDetails");
+    // Pagination logic
+    const itemsPerPage = 10;
+    const currentPage = req.query.page || 1;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = orderHistory.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(orderHistory.length / itemsPerPage);
+
+    // Prepare the data for your Handlebars template
+    // const templateData = {
+    //   orderDetails: paginatedItems,
+    //   totalPages: totalPages,
+    //   currentPage: parseInt(currentPage),
+    // };
 
     res.render("users/ordersList", {
       layout: "userlayout",
-      orderDetails: orderHistory,
+      orderDetails: paginatedItems,
+      totalPages: totalPages,
+      currentPage: parseInt(currentPage),
     });
   } catch (error) {
     throw new Error(error.message);
   }
 };
+
+// const loadOrdersView = async (req, res) => {
+//   try {
+//     const orderId = req.query.id;
+//     console.log("orderId==========================================", orderId);
+//     const userId = req.session.user_id;
+
+//     console.log(orderId, "orderId when loading page");
+//     const order = await Order.findOne({ _id: orderId }).populate({
+//       path: "products.productId",
+//       select: "name price image",
+//     });
+//     // console.log(products.productId, "product");
+//     console.log("order=======================================", order);
+
+//     const createdOnIST = moment(order.date)
+//       .tz("Asia/Kolkata")
+//       .format("DD-MM-YYYY h:mm A");
+//     order.date = createdOnIST;
+
+//     const orderDetails = order.products.map((product) => {
+//       const images = product.productId.image || []; // Set images to an empty array if it is undefined
+//       const image = images.length > 0 ? images[0] : ""; // Take the first image from the array if it exists
+
+//       return {
+//         productname: product.productId.productname,
+//         image: image,
+//         price: product.productId.price,
+//         total: product.total,
+//         quantity: product.quantity,
+//         status: order.orderStatus,
+//       };
+//     });
+
+//     const deliveryAddress = {
+//       name: order.addressDetails.name,
+//       homeAddress: order.addressDetails.homeAddress,
+//       city: order.addressDetails.city,
+//       street: order.addressDetails.street,
+//       postalCode: order.addressDetails.postalCode,
+//     };
+
+//     const subtotal = order.orderValue;
+//     const cancellationStatus = order.cancellationStatus;
+//     console.log(cancellationStatus, "cancellationStatus");
+
+//     console.log(subtotal, "subtotal");
+
+//     console.log(orderDetails, "orderDetails");
+//     console.log(deliveryAddress, "deliveryAddress");
+
+//     res.render("users/ordersView", {
+//       layout: "userlayout",
+//       orderDetails: orderDetails,
+//       deliveryAddress: deliveryAddress,
+//       subtotal: subtotal,
+
+//       orderId: orderId,
+//       orderDate: createdOnIST,
+//       cancellationStatus: cancellationStatus,
+//     });
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// };
+
+// const cancellOrder = async (requestData) => {
+//   try {
+//     const orderId = requestData;
+//     console.log(orderId, "orderId-------------------------");
+//     const updateOrder = await Order.findByIdAndUpdate(
+//       { _id: new ObjectId(orderId) },
+//       { $set: { cancellationStatus: "cancellation requested" } }
+//     );
+
+//     return updateOrder;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
 
 const loadOrdersView = async (req, res) => {
   try {
-    const orderId = req.query.id;
-
-    const userId = req.session.user_id;
-
-    console.log(orderId, "orderId when loading page");
-    const order = await Order.findOne({ _id: orderId }).populate({
-      path: "products.productId",
-      select: "name price image",
-    });
-    // console.log(products.productId, "product");
-
-    const createdOnIST = moment(order.date)
-      .tz("Asia/Kolkata")
-      .format("DD-MM-YYYY h:mm A");
-    order.date = createdOnIST;
-
-    const orderDetails = order.products.map((product) => {
-      const images = product.productId.image || []; // Set images to an empty array if it is undefined
-      const image = images.length > 0 ? images[0] : ""; // Take the first image from the array if it exists
-
-      return {
-        productname: product.productId.productname,
-        image: image,
-        price: product.productId.price,
-        total: product.total,
-        quantity: product.quantity,
-        status: order.orderStatus,
-      };
-    });
-
-    const deliveryAddress = {
-      name: order.addressDetails.name,
-      homeAddress: order.addressDetails.homeAddress,
-      city: order.addressDetails.city,
-      street: order.addressDetails.street,
-      postalCode: order.addressDetails.postalCode,
-    };
-
-    const subtotal = order.orderValue;
-    const cancellationStatus = order.cancellationStatus;
-    console.log(cancellationStatus, "cancellationStatus");
-
-    console.log(subtotal, "subtotal");
-
-    console.log(orderDetails, "orderDetails");
-    console.log(deliveryAddress, "deliveryAddress");
-
-    res.render("users/ordersView", {
-      layout: "userlayout",
-      orderDetails: orderDetails,
-      deliveryAddress: deliveryAddress,
-      subtotal: subtotal,
-
-      orderId: orderId,
-      orderDate: createdOnIST,
-      cancellationStatus: cancellationStatus,
-    });
+    await userHelpers.loadingOrdersViews(req, res);
   } catch (error) {
-    throw new Error(error);
+    console.log(error.message);
   }
 };
 
-const cancellOrder = async (requestData) => {
+const cancellOrder = async (req, res) => {
   try {
-    const orderId = requestData;
+    const id = req.body.orderId;
 
-    const updateOrder = await Order.findByIdAndUpdate(
-      { _id: new ObjectId(orderId) },
-      { $set: { cancellationStatus: "cancellation requested" } }
-    );
+    const url = "/ordersView?id=" + id;
 
-    return updateOrder;
+    await userHelpers.cancellingOrder(id);
+
+    res.redirect(url);
   } catch (error) {
-    throw new Error(error.message);
+    console.log(error.message);
+  }
+};
+const returnOrder = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+
+    const url = "/ordersView?id=" + id;
+
+    await userHelpers.returningOrder(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
   }
 };
 
 const verifyPayment = async (req, res) => {
+  console.log(req.body, "dddddddddddddddddddddddddddddddddddddd");
   userHelpers
     .verifyOnlinePayment(req.body)
     .then(() => {
       let receiptId = req.body["serverOrderDetails[receipt]"];
 
+      console.log(receiptId, "receiptIdvvvvvvvvvvvvvvvvvvvvvv");
+
       let paymentSuccess = true;
+      console.log("verifyingvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
       userHelpers
         .updateOnlineOrderPaymentStatus(receiptId, paymentSuccess)
         .then(() => {
@@ -1339,6 +1643,10 @@ module.exports = {
   resetPassword,
   sendResetpasswordmail,
   viewSinglepage,
+  getProductByPlant,
+  getProductBySeed,
+  getProductByPot,
+  getProductByPlantcare,
   addToCart,
   viewaddToCart,
   changeProductQuantity,
@@ -1359,4 +1667,6 @@ module.exports = {
   verifyPayment,
   orderPlaced,
   orderFailed,
+  searchProduct,
+  returnOrder,
 };

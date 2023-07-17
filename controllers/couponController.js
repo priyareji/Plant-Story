@@ -10,7 +10,40 @@ module.exports = {
 
     res.render("admin/couponAdd", { layout: "adminlayout", admin });
   },
+  coupon_activate: async (req, res) => {
+    try {
+      const id = req.query.id;
+      console.log("activate", id);
+      await Coupon.findByIdAndUpdate(
+        { _id: id },
 
+        {
+          $set: {
+            is_activate: true,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(error.message);
+      res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
+    }
+  },
+  coupon_inactivate: async (req, res) => {
+    try {
+      const id = req.query.id;
+      await Coupon.findByIdAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            is_activate: false,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(error.message);
+      res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
+    }
+  },
   // generate coupon
   generatorCouponCode: (req, res) => {
     couponHelper.generatorCouponCode().then((couponCode) => {

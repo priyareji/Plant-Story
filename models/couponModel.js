@@ -15,6 +15,10 @@ const couponSchema = mongoose.Schema({
     type: Date,
     default: new Date(),
   },
+  is_activate: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 module.exports = mongoose.model("Coupon", couponSchema);

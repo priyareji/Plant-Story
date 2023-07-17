@@ -100,7 +100,7 @@
                         <li class="list-group-item d-flex justify-content-between bg-light">
                             <div class="text-success">
                                 <h6 class="my-0">Promo code</h6>
-                                <small>EXAMPLECODE</small>
+                                <small id="codes" value="codes"></small>
                             </div>
                             <span class="text-success" id="couponOffer">-$0</span>
                         </li>
@@ -177,10 +177,10 @@
                                 <button class="btn btn-dark btn-lg btn-block" data-toggle="modal"
                                     data-target="#changeaddress" type="button">Change Address</button>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            {{!-- <div class="col-md-6 mb-3">
                                 <button class="btn btn-dark btn-lg btn-block" data-toggle="modal"
                                     data-target="#addnewaddress" type="button">Add new Address</button>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <hr class="mb-4">
@@ -263,7 +263,7 @@
 {{!-- Add address modal --}}
 
 <!--Add address Modal -->
-<div class="modal fade" id="addnewaddress" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+{{!-- <div class="modal fade" id="addnewaddress" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -307,7 +307,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -358,6 +358,7 @@
                 document.getElementById('total1').value = total - response.discountAmount
                 document.getElementById('couponOffer').innerText = response.discount + '%'
                 document.getElementById('codes').value = response.couponCode
+               // document.getElementById('codes').value = response.couponCode
               } else {
                 document.getElementById('couponErr').style.color = "#ff0707"
                 document.getElementById('couponErr').innerText = response.message
@@ -459,7 +460,7 @@
             // If the payment failed for any reason, calling the pre-defined function "on" in Razorpay module using the object of Razorpay
         }
 
-        function verifyPayment(razorpayServerPaymentResponse, serverOrderDetails) {
+         function verifyPayment(razorpayServerPaymentResponse, serverOrderDetails) {
             $.ajax({
                 url: '/verify-payment',
                 data: {
@@ -472,8 +473,11 @@
                 method: 'POST',
 
                 success: (response) => {
+                    console.log(response)
                     if (response.status) {
+                        
                         location.href = '/orderPlaced'
+
                     } else {
                         location.href = '/orderFailed'
                     }
@@ -482,6 +486,8 @@
         }
 
     })
+
+
     
 
 

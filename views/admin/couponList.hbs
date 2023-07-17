@@ -1,3 +1,10 @@
+<!-- Sidebar Start -->
+        {{>adminheader}}
+        <!-- Sidebar End -->
+        <!-- Content Start -->
+        <div class="content">
+            <!-- Navbar Start -->
+             {{>admin-navbar}}
 <section class="content-main">
   <div class="content-header">
     <h2 class="content-title">Coupons </h2>
@@ -49,6 +56,11 @@
                                     </td> 
                            <td class="text-end">
           <button class="btn-sm btn-danger" onclick="removeCoupon('{{_id}}')">Remove</button>
+                                           {{#if is_activate}}
+                                    <a href="/admin/couponInactivate?id={{this._id}}" class="btn btn-success" onclick="return confirm('Are you sure you want to Inactivate {{couponCode}}?')">Active</a>
+                                {{else}}
+                                 <a href="/admin/couponActivate?id={{this._id}}" class="btn btn-danger" onclick="return confirm('Are you sure you want to Activate {{couponCode}}?')">Inactive</a>
+                               {{/if}}
         </td>
                                       </tr>
                                    {{/each}}
@@ -76,7 +88,7 @@
     </nav>
   </div>
 </section>
-
+</div>
 <script>
   
   //to remove the Coupon

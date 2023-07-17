@@ -18,8 +18,8 @@
 
 
 
-                <form action="/admin/edit-product?id={{product._id}}" method="post" enctype="multipart/form-data">
-                   <div class="row mb-3">
+                <form action="/admin/editproduct?id={{product._id}}" method="post" enctype="multipart/form-data">
+                   {{!-- <div class="row mb-3">
                         <label for="image" class="col-sm-2 col-form-label">IMAGE</label>
                         <div class="col-sm-10">
                            <input type="file" name="image" id="image" class="form-control" multiple onchange="editimageView(event)">
@@ -34,11 +34,11 @@
                             {{/each}}
                             <input type="text" value="{{products._id}}" hidden id="idForserver">
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="row mb-3">
                         <label for="inputEmail3" class="col-sm-2 col-form-label">NAME</label>
                         <div class="col-sm-10">
-                            <input type="text" name="name" class="form-control" id="inputEmail3"
+                            <input type="text" name="productname" class="form-control" id="inputEmail3"
                                 value="{{product.productname}}" required>
                         </div>
                     </div>
@@ -68,8 +68,67 @@
                         </div>
                        
                     </div>
+                                        <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Stock</label>
+                        <div class="col-sm-10">
+                            <input type="number" name="stock" class="form-control" id="inputEmail3"
+                                value="{{product.stock}}" required>
+                        </div>
+                       
+                    </div>
                     
-
+   <div class="col-lg-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h4>Media</h4>
+            </div>
+            <div class="card-body">
+              <div class="input-upload">
+                  <img src="/uploads/{{product.image.[0]}}" style="max-width:40%" id="imgView1" alt="g">
+                <input class="form-control" name="image1" onchange="viewImage1(event)" type="file">
+              </div>
+            </div>
+          </div> <!-- card end// -->
+        </div>
+        <div class="col-lg-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h4>Media</h4>
+            </div>
+            <div class="card-body">
+              <div class="input-upload">
+                 <img src="/uploads/{{product.image.[1]}}" style="max-width:40%" id="imgView1" alt="g">
+                <input class="form-control" name="image2" onchange="viewImage2(event)" type="file">
+              </div>
+            </div>
+          </div> <!-- card end// -->
+        </div>
+        <div class="col-lg-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h4>Media</h4>
+            </div>
+            <div class="card-body">
+              <div class="input-upload">
+                 <img src="/uploads/{{product.image.[2]}}" style="max-width:40%" id="imgView1" alt="g">
+                <input class="form-control" name="image3" onchange="viewImage3(event)" type="file">
+              </div>
+            </div>
+          </div> <!-- card end// -->
+        </div>
+        <div class="col-lg-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h4>Media</h4>
+            </div>
+            <div class="card-body">
+              <div class="input-upload">
+                 <img src="/uploads/{{product.image.[3]}}"style="max-width:40%" id="imgView1" alt="g">
+                <input class="form-control" name="image4" onchange="viewImage4(event)" type="file">
+              </div>
+            </div>
+          </div> <!-- card end// -->
+        </div>
                     <button type="submit" class="btn btn-primary">Update</button>
                     <a href="/admin/products" class="btn btn-danger">Cancel</a>
                 </form>
@@ -193,7 +252,20 @@
         }
       });
     </script>
-
+<script>
+    function viewImage1(event) {
+      document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
+    }
+    function viewImage2(event) {
+      document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0])
+    }
+    function viewImage3(event) {
+      document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0])
+    }
+    function viewImage4(event) {
+      document.getElementById('imgView4').src = URL.createObjectURL(event.target.files[0])
+    }
+  </script>
 
 
     </div>

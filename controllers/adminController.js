@@ -9,6 +9,8 @@ const session = require("express-session");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const moment = require("moment-timezone");
+const mongoose = require("mongoose");
+const adminHelpers = require("../helpers/adminHelper/adminHelper");
 
 const Storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -95,7 +97,6 @@ const editUser = async (req, res) => {
     console.log(error.message);
   }
 };
-
 const updatingUser = async (req, res) => {
   try {
     const id = req.body.id;
@@ -317,7 +318,10 @@ const editProducts = async (req, res) => {
   try {
     console.log(req.files, "hi");
     const id = req.query.id;
+    object_id = new mongoose.Types.ObjectId(req.query.id);
+
     console.log(id, "----------------");
+    console.log(object_id, "+++++++++++");
     const product = await Product.findById({
       _id: new mongoose.Types.ObjectId(req.query.id),
     }).lean();
@@ -330,6 +334,7 @@ const editProducts = async (req, res) => {
       productname: req.body.productname,
       price: req.body.price,
       description: req.body.description,
+      stock: req.body.stock,
       category: new mongoose.Types.ObjectId(categoryId),
       image: product.image, // Use the previous image data as the starting point
     };
@@ -339,8 +344,8 @@ const editProducts = async (req, res) => {
     }
 
     const product1 = await Product.findByIdAndUpdate(
-      { _id: new mongoose.Types.ObjectId(req.query.id) },
-      { $set: updatedProductData }
+      { _id: "object_id" },
+      { $set: "updatedProductData" }
     );
     console.log(product1, "product1");
     res.redirect("/admin/product");
@@ -348,6 +353,7 @@ const editProducts = async (req, res) => {
     throw new Error(error.message);
   }
 };
+
 // updatingProducts: async (req, res) => {
 //   try {
 //     console.log(req.files, 'hi');
@@ -499,7 +505,10 @@ const category_inactivate = async (req, res) => {
 const loadOrdersList = async (req, res) => {
   try {
     console.log("clickedd----------");
-    const orderDetails = await Order.find().populate("userId").lean();
+    const orderDetails = await Order.find()
+      .sort({ date: -1 })
+      .populate("userId")
+      .lean();
     console.log(orderDetails, "orderDetails");
 
     const orderHistory = orderDetails.map((history) => {
@@ -510,150 +519,357 @@ const loadOrdersList = async (req, res) => {
       return { ...history, date: createdOnIST, userName: history.userId.name };
     });
     console.log(orderHistory, "orderHistory-----");
+    // Pagination logic
+    const itemsPerPage = 10;
+    const currentPage = req.query.page || 1;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = orderHistory.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(orderHistory.length / itemsPerPage);
+
+    // Prepare the data for your Handlebars template
+    // const templateData = {
+    //   orderDetails: paginatedItems,
+    //   totalPages: totalPages,
+    //   currentPage: parseInt(currentPage),
+    // };
     res.render("admin/orderList", {
       layout: "adminlayout",
-      orderDetails: orderHistory,
+      orderDetails: paginatedItems,
+      totalPages: totalPages,
+      currentPage: parseInt(currentPage),
     });
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-const loadOrdersViews = async (req, res) => {
-  try {
-    const orderId = req.query.id;
+// const loadOrdersViews = async (req, res) => {
+//   try {
+//     const orderId = req.query.id;
 
-    console.log(orderId, "orderId");
-    const order = await Order.findOne({ _id: orderId }).populate({
-      path: "products.productId",
-      select: "name price image",
+//     console.log(orderId, "orderId");
+//     const order = await Order.findOne({ _id: orderId }).populate({
+//       path: "products.productId",
+//       select: "name price image",
+//     });
+
+//     const createdOnIST = moment(order.date)
+//       .tz("Asia/Kolkata")
+//       .format("DD-MM-YYYY h:mm A");
+//     order.date = createdOnIST;
+
+//     const orderDetails = order.products.map((product) => {
+//       const images = product.productId.image || []; // Set images to an empty array if it is undefined
+//       const image = images.length > 0 ? images[0] : ""; // Take the first image from the array if it exists
+
+//       return {
+//         name: product.productId.name,
+//         image: image,
+//         price: product.productId.price,
+//         total: product.total,
+//         quantity: product.quantity,
+//         status: order.orderStatus,
+//       };
+//     });
+
+//     const deliveryAddress = {
+//       name: order.addressDetails.name,
+//       homeAddress: order.addressDetails.homeAddress,
+//       city: order.addressDetails.city,
+//       street: order.addressDetails.street,
+//       postalCode: order.addressDetails.postalCode,
+//     };
+
+//     const subtotal = order.orderValue;
+//     const cancellationStatus = order.cancellationStatus;
+//     console.log(cancellationStatus, "cancellationStatus");
+
+//     console.log(subtotal, "subtotal");
+
+//     console.log(orderDetails, "orderDetails");
+//     console.log(deliveryAddress, "deliveryAddress");
+
+//     res.render("admin/ordersView", {
+//       layout: "adminlayout",
+//       orderDetails: orderDetails,
+//       deliveryAddress: deliveryAddress,
+//       subtotal: subtotal,
+
+//       orderId: orderId,
+//       orderDate: createdOnIST,
+//       cancellationStatus: cancellationStatus,
+//     });
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+
+// const cancelledOrderByAdmin = async (requestData) => {
+//   try {
+//     const orderId = requestData;
+//     console.log(orderId, "orderidddddddddddddd");
+//     await Order.findByIdAndUpdate(
+//       { _id: new ObjectId(orderId) },
+//       { $set: { orderStatus: "cancelled", cancellationStatus: "cancelled" } },
+//       { new: true } // This ensures that the updated document is returned
+//     ).exec();
+
+//     console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+
+//     return updateOrder;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+
+// const rejectCancellation = async (requestData) => {
+//   try {
+//     const orderId = requestData;
+//     console.log(orderId, "orderidddddddddddddd");
+//     await Order.findByIdAndUpdate(
+//       { _id: new ObjectId(orderId) },
+//       { $set: { orderStatus: "Placed", cancellationStatus: "Not requested" } },
+//       { new: true } // This ensures that the updated document is returned
+//     ).exec();
+
+//     console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+
+//     return updateOrder;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+
+// const packingOrder = async (requestData) => {
+//   try {
+//     const orderId = requestData;
+//     console.log(orderId, "orderidddddddddddddd");
+//     await Order.findByIdAndUpdate(
+//       { _id: new ObjectId(orderId) },
+//       {
+//         $set: {
+//           orderStatus: "Packing order",
+//           cancellationStatus: "Packing order",
+//         },
+//       },
+//       { new: true } // This ensures that the updated document is returned
+//     ).exec();
+
+//     console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+
+//     return updateOrder;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+
+// const deliveredOrder = async (requestData) => {
+//   try {
+//     const orderId = requestData;
+//     console.log(orderId, "orderidddddddddddddd");
+//     await Order.findByIdAndUpdate(
+//       { _id: new ObjectId(orderId) },
+//       { $set: { orderStatus: "Delivered", cancellationStatus: "Delivered" } },
+//       { new: true } // This ensures that the updated document is returned
+//     ).exec();
+
+//     console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+
+//     return updateOrder;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+const loadOrdersView = async (req, res) => {
+  try {
+    await adminHelpers.loadingOrdersViews(req, res);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const cancelledByAdmin = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
+
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.cancellingOrderByAdmin(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const rejectCancellation = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
+
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.rejectingCancelOrderByAdmin(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const packingOrder = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
+
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.packingOrderByAdmin(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const deliveredOrder = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
+
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.deliveredOrderByAdmin(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const retunedConfirmation = async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
+
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.returnconfirmedbyadmin(id);
+
+    res.redirect(url);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const getDashboard = async (req, res) => {
+  let admin = req.session.admin;
+  let totalProducts,
+    days = [];
+  let ordersPerDay = {};
+  let paymentCount = [];
+
+  let Products = await adminHelpers.getAllProducts();
+  totalProducts = Products.length;
+
+  await orderHelpers.getOrderByDate().then((response) => {
+    let result = response;
+    console.log(result, "======");
+    for (let i = 0; i < result.length; i++) {
+      for (let j = 0; j < result[i].orders.length; j++) {
+        let ans = {};
+        ans["createdAt"] = result[i].orders[j].createdAt;
+        days.push(ans);
+      }
+    }
+    console.log(days, "}}}}}}");
+
+    days.forEach((order) => {
+      let day = order.createdAt.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      ordersPerDay[day] = (ordersPerDay[day] || 0) + 1;
     });
+  });
 
-    const createdOnIST = moment(order.date)
-      .tz("Asia/Kolkata")
-      .format("DD-MM-YYYY h:mm A");
-    order.date = createdOnIST;
+  let getCodCount = await adminHelpers.getCodCount();
 
-    const orderDetails = order.products.map((product) => {
-      const images = product.productId.image || []; // Set images to an empty array if it is undefined
-      const image = images.length > 0 ? images[0] : ""; // Take the first image from the array if it exists
+  let codCount = getCodCount.length;
 
-      return {
-        name: product.productId.name,
-        image: image,
-        price: product.productId.price,
-        total: product.total,
-        quantity: product.quantity,
-        status: order.orderStatus,
-      };
+  let getOnlineCount = await adminHelpers.getOnlineCount();
+  let onlineCount = getOnlineCount.length;
+
+  // let getWalletCount = await adminHelper.getWalletCount();
+  // let WalletCount = getWalletCount.length;
+
+  paymentCount.push(onlineCount);
+  paymentCount.push(codCount);
+  // paymentCount.push(WalletCount);
+
+  let orderByCategory = await orderHelper.getOrderByCategory();
+
+  let Plants = 0,
+    Seeds = 0,
+    Pots = 0,
+    PlantCare = 0;
+  orderByCategory.forEach((Products) => {
+    console.log(Products, "------");
+
+    if (Products.category == "Plants") Plants++;
+    if (Products.category == "Seeds") Seeds++;
+    if (Products.category == "Pots&Planters") Pots++;
+    if (Products.category == "Plant Care") PlantCare++;
+  });
+  let category = [];
+  category.push(Plants);
+  category.push(Seeds);
+  category.push(Pots);
+  category.push(PlantCare);
+
+  await orderHelper.getAllOrders().then((response) => {
+    var length = response.length;
+
+    let total = 0;
+
+    for (let i = 0; i < length; i++) {
+      total += response[i].orders.totalPrice;
+    }
+    console.log(
+      admin,
+      length,
+      total,
+      totalProducts,
+      ordersPerDay,
+      paymentCount,
+      category,
+      "---------"
+    );
+
+    res.render("admin/dashboard", {
+      layout: "admin-layout",
+      admin,
+      length,
+      total,
+      totalProducts,
+      ordersPerDay,
+      paymentCount,
+      category,
     });
-
-    const deliveryAddress = {
-      name: order.addressDetails.name,
-      homeAddress: order.addressDetails.homeAddress,
-      city: order.addressDetails.city,
-      street: order.addressDetails.street,
-      postalCode: order.addressDetails.postalCode,
-    };
-
-    const subtotal = order.orderValue;
-    const cancellationStatus = order.cancellationStatus;
-    console.log(cancellationStatus, "cancellationStatus");
-
-    console.log(subtotal, "subtotal");
-
-    console.log(orderDetails, "orderDetails");
-    console.log(deliveryAddress, "deliveryAddress");
-
-    res.render("admin/ordersView", {
-      layout: "adminlayout",
-      orderDetails: orderDetails,
-      deliveryAddress: deliveryAddress,
-      subtotal: subtotal,
-
-      orderId: orderId,
-      orderDate: createdOnIST,
-      cancellationStatus: cancellationStatus,
-    });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  });
 };
-
-const cancelledOrderByAdmin = async (requestData) => {
+const returnedByAdmin = async (req, res) => {
   try {
-    const orderId = requestData;
-    console.log(orderId, "orderidddddddddddddd");
-    await Order.findByIdAndUpdate(
-      { _id: new ObjectId(orderId) },
-      { $set: { orderStatus: "cancelled", cancellationStatus: "cancelled" } },
-      { new: true } // This ensures that the updated document is returned
-    ).exec();
+    const id = req.body.orderId;
+    console.log(id, "idddddddddddddd");
 
-    console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+    const url = "/admin/ordersView?id=" + id;
+    console.log(url, "urlllllllllllllllllllllllll");
+    await adminHelpers.returningOrderByAdmin(id);
 
-    return updateOrder;
+    res.redirect(url);
   } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-const rejectCancellation = async (requestData) => {
-  try {
-    const orderId = requestData;
-    console.log(orderId, "orderidddddddddddddd");
-    await Order.findByIdAndUpdate(
-      { _id: new ObjectId(orderId) },
-      { $set: { orderStatus: "Placed", cancellationStatus: "Not requested" } },
-      { new: true } // This ensures that the updated document is returned
-    ).exec();
-
-    console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-
-    return updateOrder;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-const packingOrder = async (requestData) => {
-  try {
-    const orderId = requestData;
-    console.log(orderId, "orderidddddddddddddd");
-    await Order.findByIdAndUpdate(
-      { _id: new ObjectId(orderId) },
-      {
-        $set: {
-          orderStatus: "Packing order",
-          cancellationStatus: "Packing order",
-        },
-      },
-      { new: true } // This ensures that the updated document is returned
-    ).exec();
-
-    console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-
-    return updateOrder;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-const deliveredOrder = async (requestData) => {
-  try {
-    const orderId = requestData;
-    console.log(orderId, "orderidddddddddddddd");
-    await Order.findByIdAndUpdate(
-      { _id: new ObjectId(orderId) },
-      { $set: { orderStatus: "Delivered", cancellationStatus: "Delivered" } },
-      { new: true } // This ensures that the updated document is returned
-    ).exec();
-
-    console.log(updateOrder, "updateOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-
-    return updateOrder;
-  } catch (error) {
-    throw new Error(error.message);
+    console.log(error.message);
   }
 };
 
@@ -678,9 +894,11 @@ module.exports = {
   category_activate,
   category_inactivate,
   loadOrdersList,
-  loadOrdersViews,
-  cancelledOrderByAdmin,
+  loadOrdersView,
+  cancelledByAdmin,
   rejectCancellation,
   packingOrder,
   deliveredOrder,
+  getDashboard,
+  retunedConfirmation,
 };
