@@ -6,7 +6,7 @@ const Coupon = require("../models/couponModel");
 module.exports = {
   // get coupon
   getAddCoupon: (req, res) => {
-    let admin = req.session.admin;
+    // let admin = req.session.admin;
 
     res.render("admin/couponAdd", { layout: "adminlayout", admin });
   },
@@ -67,7 +67,7 @@ module.exports = {
   },
 
   getCouponLists: (req, res) => {
-    let admin = req.session.admin;
+    // let admin = req.session.admin;
     couponHelper.getCouponList().then((couponList) => {
       res.render("admin/couponList", {
         layout: "adminlayout",

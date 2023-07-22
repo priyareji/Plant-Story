@@ -1,20 +1,27 @@
+const User = require("../models/userModel");
+
 const isLogin = async (req, res, next) => {
   try {
     if (req.session.user_id) {
-      //   console.log(req.session.user_id);
+      const userData = await User.findById(req.session.user_id);
+      if (userData && !userData.is_blocked) {
+        next();
+      } else {
+        delete req.session.user_id;
+        return res.redirect("/login");
+      }
     } else {
-      res.redirect("/login");
+      return res.redirect("/login");
     }
-    next();
   } catch (error) {
     console.log(error.message);
   }
 };
+
 const isLogout = async (req, res, next) => {
   try {
-    // console.log(req.session);
     if (req.session.user_id) {
-      res.redirect("/home");
+      return res.redirect("/home");
     }
     next();
   } catch (error) {
@@ -22,15 +29,7 @@ const isLogout = async (req, res, next) => {
   }
 };
 
-const adminLogin = async (req, res, next) => {
-  if (req.session.admin) {
-    next();
-  } else {
-    res.render("admin/login", { layout: "adminlayout" });
-  }
-};
 module.exports = {
   isLogin,
   isLogout,
-  adminLogin,
 };

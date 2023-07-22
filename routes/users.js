@@ -10,6 +10,7 @@ router.use(session({ secret: config.sessionSecret }));
 const auth = require("../middleware/auth");
 const userController = require("../controllers/userController");
 const couponController = require("../controllers/couponController");
+const wishListController = require("../controllers/wishListcontroller");
 /* GET users listing. */
 // router.get("/", function (req, res, next) {
 //   res.send("respond with a resource");
@@ -75,6 +76,8 @@ router.get("/orderFailed", auth.isLogin, userController.orderFailed);
 router.get("/coupon-verify/:id", auth.isLogin, couponController.verifyCoupon);
 router.get("/apply-coupon/:id", auth.isLogin, couponController.applyCoupon);
 router.get("/searchProduct", auth.isLogin, userController.searchProduct);
+router.get("/error", auth.isLogin, userController.errorPage);
+router.get("/wishlist", auth.isLogin, wishListController.wishList);
 // router.get("/order-details", auth.isLogin, userController.orderDetails);
 // router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
 // router.post("/cancel-order", userController.cancellOrder);

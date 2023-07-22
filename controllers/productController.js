@@ -35,7 +35,7 @@ module.exports = {
     }
 
     productHelper.postEditProduct(proId, req.body, image).then(() => {
-      res.redirect("admin/edit-product");
+      res.redirect("/admin/product");
     });
   },
 };

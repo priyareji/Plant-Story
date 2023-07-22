@@ -40,14 +40,18 @@ const verifyLogin = async (req, res) => {
     console.log(userData);
     if (userData) {
       const passwordMatch = await bcrypt.compare(password, userData.password);
+      console.log("ssssssssssssssssssssssssssssssss");
       if (passwordMatch) {
         if (userData.is_admin === 0) {
+          console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
           res.render("admin/login", {
             message: "Email and Password are invalid",
             layout: "adminlayout",
           });
         } else {
-          req.session.user_id = userData._id;
+          console.log("ggggggggggggggggggggggggggggggggggggggggg");
+          req.session.adminId = userData._id;
+          req.session.is_admin = userData.is_admin;
           res.redirect("/admin/home");
         }
       }
@@ -62,16 +66,71 @@ const verifyLogin = async (req, res) => {
   }
 };
 
+///admin logout
+// const logout = async (req, res) => {
+//   try {
+//     delete req.session.adminId;
+//     delete req.session.is_admin;
+//     res.redirect("/");
+//   } catch (error) {
+//     throw new Error(error.message);
+//     res.redirect("/error");
+//   }
+// };
+
 const loadDashboard = async (req, res) => {
   try {
+    const dashBoardDetails = await adminHelpers.loadingDashboard(req, res);
+    const orderDetails = await adminHelpers.OrdersList(req, res);
+    const totalUser = dashBoardDetails.totaluser;
+    const totalSales = dashBoardDetails.totalSales;
+    const salesbymonth = dashBoardDetails.salesbymonth;
+    const paymentMethod = dashBoardDetails.paymentMethod;
+    const yearSales = dashBoardDetails.yearSales;
+    const todaySales = dashBoardDetails.todaySales;
+    console.log(todaySales, "todaySales");
+    console.log(totalUser, "totalUser");
+    console.log(totalSales, "totalSales");
+
+    console.log(paymentMethod, "paymentMethod");
+    console.log(yearSales, "yearSales");
+    // console.log(orderDetails, "orderDetailsssssssssssssssssssssssssss");
+    const todaySalesAmount = todaySales[0].totalAmount;
+    const totalSalesAmount = totalSales[0].totalSum;
+    const yearSalesTotal = yearSales[0].totalSales;
+    console.log(salesbymonth, ";;;;;;;;;;;;;;;;;;;;;");
+    let sales = encodeURIComponent(JSON.stringify(salesbymonth));
+    console.log(
+      sales,
+      "sales---------------------==============---------------------"
+    );
+    // console.log(
+    //   todaySalesAmount,
+    //   totalSalesAmount,
+    //   yearSalesTotal,
+    //   salesbymonth,
+    //   "-----------------------------------------------000000000000000000------------"
+    // );
     // const UserData = await User.findById({ _id: req.session.user_id });
     // // console.log(UserData, "userdataaa");
     // console.log("loginnn");
-    res.render("admin/home", { layout: "adminlayout" });
+    res.render("admin/home", {
+      layout: "adminlayout",
+      totalUser,
+      todaySales,
+      totalSales,
+      todaySalesAmount,
+      totalSalesAmount,
+      salesbymonth: encodeURIComponent(JSON.stringify(salesbymonth)),
+      paymentMethod: encodeURIComponent(JSON.stringify(paymentMethod)),
+      yearSalesTotal,
+      orderDetails: orderDetails,
+    });
   } catch (error) {
     console.log(error.message);
   }
 };
+
 const loadUserManage = async (req, res) => {
   try {
     console.log(req.session.user_id);
@@ -348,7 +407,12 @@ const editProducts = async (req, res) => {
       { $set: "updatedProductData" }
     );
     console.log(product1, "product1");
-    res.redirect("/admin/product");
+    // res.redirect("/admin/product");
+    res.render("admin/product-manage", {
+      layout: "adminlayout",
+      product: product1,
+      //categories: categoryData,
+    });
   } catch (error) {
     throw new Error(error.message);
   }
@@ -518,22 +582,32 @@ const loadOrdersList = async (req, res) => {
 
       return { ...history, date: createdOnIST, userName: history.userId.name };
     });
-    console.log(orderHistory, "orderHistory-----");
-    // Pagination logic
+
+    // Calculate the total number of items in each order
+    const orderHistoryWithItemCount = orderHistory.map((order) => {
+      const itemCount = order.products.reduce(
+        (total, product) => total + product.quantity,
+        0
+      );
+      return { ...order, itemCount };
+    });
+
+    console.log(orderHistoryWithItemCount, "orderHistoryWithItemCount");
+
+    // Pagination logic (remaining code remains the same)
     const itemsPerPage = 10;
     const currentPage = req.query.page || 1;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedItems = orderHistory.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(orderHistory.length / itemsPerPage);
+    const paginatedItems = orderHistoryWithItemCount.slice(
+      startIndex,
+      endIndex
+    );
+    const totalPages = Math.ceil(
+      orderHistoryWithItemCount.length / itemsPerPage
+    );
 
-    // Prepare the data for your Handlebars template
-    // const templateData = {
-    //   orderDetails: paginatedItems,
-    //   totalPages: totalPages,
-    //   currentPage: parseInt(currentPage),
-    // };
     res.render("admin/orderList", {
       layout: "adminlayout",
       orderDetails: paginatedItems,
@@ -764,7 +838,7 @@ const retunedConfirmation = async (req, res) => {
   }
 };
 const getDashboard = async (req, res) => {
-  let admin = req.session.admin;
+  // let admin = req.session.admin;
   let totalProducts,
     days = [];
   let ordersPerDay = {};
@@ -872,10 +946,133 @@ const returnedByAdmin = async (req, res) => {
     console.log(error.message);
   }
 };
+const loadSalesPage = async (req, res) => {
+  try {
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    console.log(adminUser, "adminuussseeerrrr");
+    const orderSuccessDetails = await adminHelpers.orderSuccess();
+    console.log(orderSuccessDetails.total, "order");
+    const order = orderSuccessDetails.orderHistory;
+    const total = orderSuccessDetails.total;
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order,
+      total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    //res.redirect("/admin/admin-error");
+  }
+};
+
+const getSalesToday = async (req, res) => {
+  try {
+    const todaySales = await adminHelpers.salesToday();
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    // console.log(todaySales,'todaySales');
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order: todaySales.orderHistory,
+      total: todaySales.total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.redirect("/admin/admin-error");
+  }
+};
+
+const getWeekSales = async (req, res) => {
+  try {
+    const weeklySales = await adminHelpers.weeklySales();
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order: weeklySales.orderHistory,
+      total: weeklySales.total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.redirect("/admin/admin-error");
+  }
+};
+
+const getMonthSales = async (req, res) => {
+  try {
+    const montlySales = await adminHelpers.monthlySales();
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order: montlySales.orderHistory,
+      total: montlySales.total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.redirect("/admin/admin-error");
+  }
+};
+
+const getYearlySales = async (req, res) => {
+  try {
+    const yearlySales = await adminHelpers.yearlySales();
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order: yearlySales.orderHistory,
+      total: yearlySales.total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.redirect("/admin/admin-error");
+  }
+};
+
+const salesWithDate = async (req, res) => {
+  try {
+    const salesWithDate = await adminHelpers.salesWithDate(req, res);
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    res.render("admin/admin-sales", {
+      layout: "adminlayout",
+      order: salesWithDate.orderHistory,
+      total: salesWithDate.total,
+      admin: adminUser,
+    });
+  } catch (error) {
+    console.log(error.message, "salesWithDate controller error");
+    res.redirect("/admin/admin-error");
+  }
+};
+
+const downloadSalesReport = async (req, res) => {
+  try {
+    const salesPdf = await adminHelpers.salesPdf(req, res);
+  } catch (error) {
+    console.log(error.message, "pdfSales controller error");
+    res.redirect("/admin/admin-error");
+  }
+};
 
 module.exports = {
   loadLogin,
   verifyLogin,
+  // logout,
   loadDashboard,
   loadUserManage,
   editUser,
@@ -901,4 +1098,11 @@ module.exports = {
   deliveredOrder,
   getDashboard,
   retunedConfirmation,
+  loadSalesPage,
+  getSalesToday,
+  getWeekSales,
+  getMonthSales,
+  getYearlySales,
+  salesWithDate,
+  downloadSalesReport,
 };

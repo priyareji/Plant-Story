@@ -49,15 +49,27 @@
               	<a class="dropdown-item" href="wishlist.html">Wishlist</a>
                 <a class="dropdown-item" href="product-single.html">Single Product</a>
                 <a class="dropdown-item" href="cart.html">Cart</a>
-                <a class="dropdown-item" href="checkout.html">Checkout</a>
+                <a class="dropdown-item" href="/error">Checkout</a>
+				
+				<a class="dropdown-item" href="/error">Checkout</a>
               </div>
             </li>
 	          
 	        
-	          <li class="nav-item cta cta-colored"><a href="/addtocart" class="nav-link"><i class="fa fa-shopping-cart" style="color:rgb(2, 57, 30)"></i><span class="badge badge-warning">{{sumOfQuantities}}</span></a></li>
+	     
+  <li class="nav-item cta cta-colored">
+    <a href="/addtocart" class="nav-link">
+      <i class="fa fa-shopping-cart" style="color:rgb(2, 57, 30)"></i>
+	     {{#if (gt sumOfQuantities 0)}}
+      <span class="badge badge-warning">{{sumOfQuantities}}</span>
+	  {{/if}}
+    </a>
+  </li>
+
 <!-- Search form -->
 <li class="nav-item cta cta-colored">
-<form action="/searchProduct" method="GET" style="margin-top: 20px;"">
+<form action="/searchProduct" method="GET" style="margin-top: 20px;">
+
   <input type="text" name="search" placeholder="Search products" value="{{searchTerm}}">
   <button type="submit">Search</button>
 </form>

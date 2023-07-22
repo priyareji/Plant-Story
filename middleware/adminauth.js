@@ -1,8 +1,8 @@
-const isLogin = async (req, res, next) => {
+const adminIsLogin = async (req, res, next) => {
   try {
-    if (req.session.user_id && req.session.is_admin === true) {
+    if (req.session.adminId && req.session.is_admin === 1) {
     } else {
-      return res.redirect("admin/admin-login");
+      return res.redirect("admin/login");
     }
     next();
   } catch (error) {
@@ -10,10 +10,10 @@ const isLogin = async (req, res, next) => {
   }
 };
 
-const isLogout = async (req, res, next) => {
+const adminIsLogout = async (req, res, next) => {
   try {
-    if (req.session.user_id && req.session.is_admin === true) {
-      return res.redirect("admin/admin-home");
+    if (req.session.adminId && req.session.is_admin === 1) {
+      return res.redirect("admin/home");
     }
     next();
   } catch (error) {
@@ -22,6 +22,6 @@ const isLogout = async (req, res, next) => {
 };
 
 module.exports = {
-  isLogin,
-  isLogout,
+  adminIsLogin,
+  adminIsLogout,
 };
