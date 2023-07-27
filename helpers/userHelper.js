@@ -153,7 +153,13 @@ module.exports = {
       }
     });
   },
-  placingOrder: async (userId, orderData, orderedProducts, totalOrderValue) => {
+  placingOrder: async (
+    userId,
+    orderData,
+    orderedProducts,
+    totalOrderValue,
+    totalAmount
+  ) => {
     let orderStatus =
       orderData["paymentMethod"] === "COD" ? "Placed" : "Pending";
     console.log(orderedProducts, "0000000000000000000000000000000000000000000");
@@ -186,6 +192,7 @@ module.exports = {
       paymentMethod: orderData["paymentMethod"],
       orderStatus: orderStatus,
       products: orderedProducts,
+      total: totalAmount,
       addressDetails: address,
     });
 

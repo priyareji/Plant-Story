@@ -99,13 +99,13 @@
 
                         <li class="list-group-item d-flex justify-content-between bg-light">
                             <div class="text-success">
-                                <h6 class="my-0">Promo code</h6>
+                                <h6 class="my-0">Discount Amount</h6>
                                 <small id="codes" value="codes"></small>
                             </div>
-                            <span class="text-success" id="couponOffer">-$0</span>
+                            <span class="text-success" id="couponOffer" value="couponOffer"></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Total(INR)</span>
+                            <span>Amount To Pay</span>
                             <strong id="total">₹{{this.subtotal}}</strong>
                         </li>
                     </ul>
@@ -126,8 +126,8 @@
                     <form class="needs-validation" novalidate="" id="checkout-form">
 
 
-
-
+  {{!-- <span class="text-success" id="couponOffer" value="couponOffer"></span> --}}
+<input type="hidden" id="couponOffer"  value="couponOffer"> 
                         <div class="mb-3">
                             <label for="username">Name</label>
                             <div class="input-group">
@@ -182,9 +182,10 @@
                                     data-target="#addnewaddress" type="button">Add new Address</button>
                             </div> --}}
                         </div>
-
+{{!-- <input type="hidden" id="amountToPay" name="amountToPay" value="{{this.total}}"> --}}
                         <hr class="mb-4">
                         <h4 class="mb-3">Payment</h4>
+                        <input type="hidden" id="amountToPay" name="amountToPay" value="{{this.total}}">
                         <div class="d-block my-3">
                             <div class="custom-control custom-radio">
                                 <input id="credit" name="paymentMethod" type="radio" class="custom-control-input"
@@ -334,52 +335,53 @@
     })();
 
 
-  function applyCoupon(total) {
-        console.log("clickedddddddd")
-        console.log(total,"total")
-    let couponCode = document.getElementById('couponCode').value
-    console.log(couponCode,"couponCode")
-      $.ajax({
-      url: '/coupon-verify/' + couponCode,
-      method: 'GET',
-      success: (response) => {
-        if (response.status == true) {
-  
-         $.ajax({
-            url: '/apply-coupon/' + couponCode,
-            method: 'GET',
-            success: (response) => {
-              console.log(response,'---');
-           if (response.status == true) {
-                document.getElementById('couponErr').style.color = '#19ff11'
-                document.getElementById('couponErr').innerText = "Coupon Applied SuccessFully"
-                document.getElementById('subTotal').innerText = total - response.discountAmount
-                document.getElementById('total').innerText = total - response.discountAmount
-                document.getElementById('total1').value = total - response.discountAmount
-                document.getElementById('couponOffer').innerText = response.discount + '%'
-                document.getElementById('codes').value = response.couponCode
-               // document.getElementById('codes').value = response.couponCode
-              } else {
-                document.getElementById('couponErr').style.color = "#ff0707"
-                document.getElementById('couponErr').innerText = response.message
-              }
+ function applyCoupon(total) {
+    console.log("clickedddddddd");
+    console.log(total, "total");
+    let couponCode = document.getElementById('couponCode').value;
+    console.log(couponCode, "couponCode");
+    $.ajax({
+        url: '/coupon-verify/' + couponCode,
+        method: 'GET',
+        success: (response) => {
+            if (response.status == true) {
+                $.ajax({
+                    url: '/apply-coupon/' + couponCode,
+                    method: 'GET',
+                    success: (response) => {
+                        console.log(response, '---');
+                        if (response.status == true) {
+                           // {{!-- const newTotal = total - discountAmount; --}}
+      //  {{!-- document.getElementById('total').innerText = '₹' + newTotal; --}}
+        
+                            document.getElementById('couponErr').style.color = '#19ff11';
+                            document.getElementById('couponErr').innerText = "Coupon Applied Successfully";
+                            const discountAmount = response.discountAmount;
+                            const newTotal=total - discountAmount;
+                            document.getElementById('amountToPay').value = newTotal; // Store the updated amount in the hidden input field
+                            document.getElementById('couponOffer').innerText = '₹' + discountAmount;
+                            document.getElementById('subTotal').innerText = '₹' + (total - discountAmount);
+                            document.getElementById('total').innerText = '₹' + (total - discountAmount);
+                            document.getElementById('total1').value = total - discountAmount;
+                            document.getElementById('amount').innerText = '₹' + (total - discountAmount);
+                            document.getElementById('codes').innerText = couponCode;
+                        } else {
+                            document.getElementById('couponErr').style.color = "#ff0707";
+                            document.getElementById('couponErr').innerText = response.message;
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('couponErr').style.color = "#ff0707";
+                document.getElementById('couponErr').innerText = response.message;
 
+                setTimeout(function() {
+                    location.reload();
+                }, 5000);
             }
-          })
-        } else {
-          document.getElementById('couponErr').style.color = "#ff0707"
-          document.getElementById('couponErr').innerText = response.message
-
-          setTimeout(function() {
-            location.reload()
-          }, 5000)
         }
-
-      }
-    })
-  
-  }
-
+    });
+}
 
 
 
@@ -400,8 +402,10 @@
         $('#checkout-button').click(function (e) {
 
             e.preventDefault(); // To prevent default method of submitting form as here Ajax should be used here to submit the form based on the two different payment methods
-
-            console.log("Checkout Button Ajax call");
+ console.log("Checkout Button Ajax call");
+let couponCode = document.getElementById('couponCode').value;
+    console.log(couponCode, "couponCode");
+           
 
             $.ajax({
 
@@ -436,7 +440,7 @@
 
             let paymentDataToRazorpayServer = {
                 "key": razorpayKeyId,
-                "amount": orderDetails.amount,
+                "amount": total,
                 "currency": "INR",
                 "name": "Plant story",
                 "description": "Test Transaction",

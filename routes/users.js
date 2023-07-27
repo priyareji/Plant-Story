@@ -1,13 +1,12 @@
 var express = require("express");
 var router = express.Router();
-const session = require("express-session");
-const bodyParser = require("body-parser");
 
+const bodyParser = require("body-parser");
+const auth = require("../middleware/auth");
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 const config = require("../config/config");
-router.use(session({ secret: config.sessionSecret }));
-const auth = require("../middleware/auth");
+
 const userController = require("../controllers/userController");
 const couponController = require("../controllers/couponController");
 const wishListController = require("../controllers/wishListcontroller");
@@ -45,15 +44,11 @@ router.get(
   auth.isLogin,
   userController.getProductByPlantcare
 );
-router.post("/add-cart", auth.isLogin, userController.addToCart);
+router.post("/add-cart", userController.addToCart);
 router.get("/addtocart", auth.isLogin, userController.viewaddToCart);
-router.post(
-  "/change-product-quantity",
-  auth.isLogin,
-  userController.changeProductQuantity
-);
+router.post("/change-product-quantity", userController.changeProductQuantity);
 router.get("/user-profile", auth.isLogin, userController.viewuserProfile);
-router.post("/user-edit", auth.isLogin, userController.editUser);
+router.post("/user-edit", userController.editUser);
 router.get("/address", auth.isLogin, userController.loadAddressList);
 router.post("/address", userController.addingAddress);
 router.post("/add-new-address", userController.addingNewAddress);

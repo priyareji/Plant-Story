@@ -8,6 +8,7 @@ const isLogin = async (req, res, next) => {
         next();
       } else {
         delete req.session.user_id;
+        a;
         return res.redirect("/login");
       }
     } else {

@@ -1,10 +1,11 @@
 const adminIsLogin = async (req, res, next) => {
   try {
     if (req.session.adminId && req.session.is_admin === 1) {
+      next();
     } else {
+      console.log("redirectedddddddddddddd");
       return res.redirect("admin/login");
     }
-    next();
   } catch (error) {
     console.log(error.message);
   }

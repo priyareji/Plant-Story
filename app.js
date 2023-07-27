@@ -10,11 +10,14 @@ const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
 const bodyParser = require("body-parser");
 const handlebars_helpers = require("handlebars-helpers");
+const config = require("./config/config");
 
 const app = express();
 
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://127.0.0.1:27017/green_store");
+mongoose.connect(
+  "mongodb+srv://priyareji:i7Pk6cN54h95ITlk@cluster0.uhtfoms.mongodb.net/"
+);
 // view engine setup
 
 app.set("views", path.join(__dirname, "views"));
@@ -33,6 +36,7 @@ app.use(logger("dev"));
 app.use(express.json());
 
 app.use(cookieParser());
+app.use(session({ secret: config.sessionSecret }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());

@@ -52,6 +52,13 @@ const verifyLogin = async (req, res) => {
           console.log("ggggggggggggggggggggggggggggggggggggggggg");
           req.session.adminId = userData._id;
           req.session.is_admin = userData.is_admin;
+
+          console.log(
+            req.session.adminId,
+            req.session.is_admin,
+            "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[["
+          );
+          console.log(req.session, "req.session");
           res.redirect("/admin/home");
         }
       }
@@ -66,17 +73,17 @@ const verifyLogin = async (req, res) => {
   }
 };
 
-///admin logout
-// const logout = async (req, res) => {
-//   try {
-//     delete req.session.adminId;
-//     delete req.session.is_admin;
-//     res.redirect("/");
-//   } catch (error) {
-//     throw new Error(error.message);
-//     res.redirect("/error");
-//   }
-// };
+//admin logout
+const logout = async (req, res) => {
+  try {
+    delete req.session.adminId;
+    delete req.session.is_admin;
+    res.redirect("/");
+  } catch (error) {
+    throw new Error(error.message);
+    res.redirect("/error");
+  }
+};
 
 const loadDashboard = async (req, res) => {
   try {
@@ -838,7 +845,7 @@ const retunedConfirmation = async (req, res) => {
   }
 };
 const getDashboard = async (req, res) => {
-  // let admin = req.session.admin;
+  let admin = req.session.adminId;
   let totalProducts,
     days = [];
   let ordersPerDay = {};

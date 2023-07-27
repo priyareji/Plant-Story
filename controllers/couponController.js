@@ -2,13 +2,16 @@
 const couponHelper = require("../helpers/adminHelper/coupenHelper");
 const userHelpers = require("../helpers/userHelper");
 const Coupon = require("../models/couponModel");
+const User = require("../models/userModel");
 
 module.exports = {
   // get coupon
-  getAddCoupon: (req, res) => {
+  getAddCoupon: async (req, res) => {
     // let admin = req.session.admin;
-
-    res.render("admin/couponAdd", { layout: "adminlayout", admin });
+    const adminUser = await User.findOne({
+      is_admin: req.session.is_admin,
+    }).lean();
+    res.render("admin/couponAdd", { layout: "adminlayout", admin: adminUser });
   },
   coupon_activate: async (req, res) => {
     try {
@@ -23,6 +26,11 @@ module.exports = {
           },
         }
       );
+      const couponList = await Coupon.find().lean();
+      res.render("admin/couponList", {
+        layout: "adminLayout",
+        couponList,
+      });
     } catch (error) {
       console.error(error.message);
       res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
@@ -39,6 +47,11 @@ module.exports = {
           },
         }
       );
+      const couponList = await Coupon.find().lean();
+      res.render("admin/couponList", {
+        layout: "adminLayout",
+        couponList,
+      });
     } catch (error) {
       console.error(error.message);
       res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
@@ -60,6 +73,7 @@ module.exports = {
       minDiscountPercentage: req.body.minDiscountPercentage,
       maxDiscountValue: req.body.maxDiscount,
       description: req.body.description,
+      useageCount: req.body.useageCount,
     };
     couponHelper.postaddCoupon(data).then((response) => {
       res.send(response);
@@ -67,7 +81,7 @@ module.exports = {
   },
 
   getCouponLists: (req, res) => {
-    // let admin = req.session.admin;
+    let admin = req.session.adminId;
     couponHelper.getCouponList().then((couponList) => {
       res.render("admin/couponList", {
         layout: "adminlayout",

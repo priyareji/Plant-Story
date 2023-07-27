@@ -18,8 +18,8 @@
                 <div class="col-md-12 mb-3">
                   <label class="form-label">Coupon Code</label>
                   <div class="input-group">
-                    <input type="text" id="couponName" class="form-control" value="" placeholder="Generate Coupon Code" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                    <button class="btn btn-outline-info" type="button" onclick="generateCoupon()">Generate Code</button>
+                    <input type="text" id="couponName" class="form-control" value="" placeholder="Coupon Code" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                    {{!-- <button class="btn btn-outline-info" type="button" onclick="generateCoupon()">Generate Code</button> --}}
                     <p id="error1" class="text-danger"></p>
                   </div>
                 </div>
@@ -48,6 +48,11 @@
                   <p id="error5" class="text-danger"></p>
                 </div>
   
+                 <div class="col-md-12 mb-3">
+                  <label class="form-label">Useage Count</label>
+                  <input id="useageCount"name="useageCount" type="number" class="form-control" />
+                  {{!-- <p id="error5" class="text-danger"></p> --}}
+                </div>
                 <div class="col-md-12 mb-3">
                   <label class="form-label">Description (T&amp;C)</label>
                   <textarea name="" class="form-control" id="description" cols="45" rows="5"></textarea>

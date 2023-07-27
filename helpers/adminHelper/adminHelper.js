@@ -4,6 +4,9 @@ const Product = require("../../models/productModel");
 const User = require("../../models/userModel");
 const { ObjectId } = require("mongodb");
 const { cancellOrder } = require("../../controllers/userController");
+const fs = require("fs");
+//const moment = require("moment-timezone");
+const pdfPrinter = require("pdfmake");
 
 module.exports = {
   loadingDashboard: async (req, res) => {
@@ -881,7 +884,7 @@ module.exports = {
         });
 
         const order = await Order.find({
-          orderStatus: { $in: ["Placed", "Delivered", "Preparing food"] },
+          orderStatus: { $in: ["Placed", "Delivered"] },
         })
           .populate("userId")
           .exec();
@@ -904,7 +907,7 @@ module.exports = {
         // Create document definition
         const docDefinition = {
           content: [
-            { text: "Juco Berry", style: "header" },
+            { text: "Plant Story", style: "header" },
             { text: "\n" },
             { text: "Order Information", style: "header1" },
             { text: "\n" },

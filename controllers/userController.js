@@ -12,6 +12,10 @@ const userHelpers = require("../helpers/userHelper");
 const mongoose = require("mongoose");
 const moment = require("moment-timezone");
 const Razorpay = require("razorpay");
+const easyinvoice = require("easyinvoice");
+const fs = require("fs");
+const { Readable } = require("stream");
+const path = require("path");
 var instance = new Razorpay({
   key_id: "rzp_test_geVs1Kqnz5ziUc",
   key_secret: "CpMAeOoo1SEci1tr6OXJm7pe",
@@ -190,7 +194,15 @@ const verifyLogin = async (req, res) => {
           }
         } else {
           req.session.user_id = userData._id;
+          console.log(
+            req.session.user_id,
+            "////////////////////////////////////////////////"
+          );
+          console.log(
+            "adminiddddddddddddddddddffffffffff",
 
+            req.session
+          );
           res.redirect("/home");
         }
       } else {
@@ -425,12 +437,13 @@ const loadHome = async (req, res) => {
 const userLogout = async (req, res) => {
   try {
     delete req.session.user_id;
-    res.redirect("/");
+    res.redirect("/login");
   } catch (error) {
     throw new Error(error.message);
     res.redirect("/error");
   }
 };
+
 const sendResetpasswordmail = async (name, email, token) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -1197,16 +1210,17 @@ const editingAddress = async (req, res) => {
       },
       { new: true }
     );
+    res.redirect("/address");
 
-    if (updatedAddress) {
-      console.log("Address updated successfully:", updatedAddress);
-      // Redirect or send a response indicating the update was successful
-      res.redirect("/address");
-    } else {
-      console.log("Address not found or not updated");
-      // Redirect or send a response indicating the address was not found or not updated
-      res.redirect("/address");
-    }
+    // if (updatedAddress) {
+    //   console.log("Address updated successfully:", updatedAddress);
+    //   // Redirect or send a response indicating the update was successful
+    //   res.redirect("/address");
+    // } else {
+    //   console.log("Address not found or not updated");
+    //   // Redirect or send a response indicating the address was not found or not updated
+    //   res.redirect("/address");
+    // }
   } catch (error) {
     console.error("Error updating address:", error);
     // Handle the error appropriately
@@ -1419,22 +1433,142 @@ const changingTheAddress = async (req, res) => {
 //     res.redirect("/address");
 //   }
 // };
+// const placeOrder = async (req, res) => {
+//   try {
+//     console.log("enter---------");
+//     let userId = req.session.user_id; // Used for storing user details for further use in this route
+//     let orderDetails = req.body;
+//     console.log(orderDetails, "orderdetailsssssssssssssssssssssssssss");
+
+//     // console.log(req.body,'vvvvvvvvvvvvvvvvvvvvvvvv');
+//     console.log(userId, "useriddddddddddddddddddddddd");
+//     let orderedProducts = await userHelpers.getProductListForOrders(userId);
+//     console.log(
+//       orderedProducts,
+//       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+//     );
+//     if (orderedProducts) {
+//       let totalOrderValue = await userHelpers.getCartValue(userId);
+//       console.log(totalOrderValue, "this is my total order valueeeeeeeeee");
+//       userHelpers
+//         .placingOrder(userId, orderDetails, orderedProducts, totalOrderValue)
+//         .then((orderId) => {
+//           if (req.body["paymentMethod"] === "COD") {
+//             res.json({ COD_CHECKOUT: true });
+//           } else if (req.body["paymentMethod"] === "ONLINE") {
+//             userHelpers
+//               .generateRazorpayOrder(orderId, totalOrderValue)
+//               .then(async (razorpayOrderDetails) => {
+//                 const user = await User.findById({ _id: userId }).lean();
+//                 res.json({
+//                   ONLINE_CHECKOUT: true,
+//                   userDetails: user,
+//                   userOrderRequestData: orderDetails,
+//                   orderDetails: razorpayOrderDetails,
+//                   razorpayKeyId: "rzp_test_geVs1Kqnz5ziUc",
+//                 });
+//               });
+//           } else {
+//             res.json({ paymentStatus: false });
+//           }
+//         });
+//     } else {
+//       res.json({ checkoutStatus: false });
+//     }
+//   } catch (error) {
+//     console.log(error.message);
+//     res.redirect("/error");
+//   }
+// };
+
+// const placeOrder = async (req, res) => {
+//   try {
+//     console.log("enter---------");
+//     let userId = req.session.user_id;
+//     let orderDetails = req.body;
+//     console.log(orderDetails, "orderdetailsssssssssssssssssssssssssss");
+//     console.log(userId, "useriddddddddddddddddddddddd");
+//     let orderedProducts = await userHelpers.getProductListForOrders(userId);
+//     console.log(
+//       orderedProducts,
+//       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+//     );
+//     if (orderedProducts) {
+//       let totalOrderValue = await userHelpers.getCartValue(userId);
+//       console.log(req.body.couponCode);
+//       // Check if the user has applied a coupon
+//       if (req.body.couponCode) {
+//         // Assuming the coupon discount amount is passed from the frontend
+//         const couponDiscountAmount = parseFloat(req.body.couponDiscountAmount);
+//         // Update the total order value with the coupon discount amount
+//         totalOrderValue -= couponDiscountAmount;
+//       }
+
+//       userHelpers
+//         .placingOrder(userId, orderDetails, orderedProducts, totalOrderValue)
+//         .then((orderId) => {
+//           if (req.body["paymentMethod"] === "COD") {
+//             res.json({ COD_CHECKOUT: true });
+//           } else if (req.body["paymentMethod"] === "ONLINE") {
+//             userHelpers
+//               .generateRazorpayOrder(orderId, totalOrderValue)
+//               .then(async (razorpayOrderDetails) => {
+//                 const user = await User.findById({ _id: userId }).lean();
+//                 res.json({
+//                   ONLINE_CHECKOUT: true,
+//                   userDetails: user,
+//                   userOrderRequestData: orderDetails,
+//                   orderDetails: razorpayOrderDetails,
+//                   razorpayKeyId: "rzp_test_geVs1Kqnz5ziUc",
+//                 });
+//               });
+//           } else {
+//             res.json({ paymentStatus: false });
+//           }
+//         });
+//     } else {
+//       res.json({ checkoutStatus: false });
+//     }
+//   } catch (error) {
+//     console.log(error.message);
+//     res.redirect("/error");
+//   }
+// };
+
+//////////////////////////////
+
 const placeOrder = async (req, res) => {
   try {
     console.log("enter---------");
     let userId = req.session.user_id; // Used for storing user details for further use in this route
     let orderDetails = req.body;
     console.log(orderDetails, "orderdetailsssssssssssssssssssssssssss");
-
+    let totalAmount = orderDetails.amountToPay;
+    console.log(totalAmount, "totalllllllllllllllllllll");
     // console.log(req.body,'vvvvvvvvvvvvvvvvvvvvvvvv');
     console.log(userId, "useriddddddddddddddddddddddd");
     let orderedProducts = await userHelpers.getProductListForOrders(userId);
-    // console.log(orderedProducts,'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+    console.log(orderedProducts, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    // totalOrderValue = totalOrderValue - couponDiscountAmount;
     if (orderedProducts) {
-      let totalOrderValue = await userHelpers.getCartValue(userId);
+      let totalOrderValue = totalAmount;
+
+      // let couponCode = req.params.id;
+      // console.log("paramssssss", couponCode);
+
+      // couponHelper.applyCoupon(couponCode, total).then((response) => {
+      //   res.send(response);
+      //   console.log(response);
+      // });
 
       userHelpers
-        .placingOrder(userId, orderDetails, orderedProducts, totalOrderValue)
+        .placingOrder(
+          userId,
+          orderDetails,
+          orderedProducts,
+          totalOrderValue,
+          totalAmount
+        )
         .then((orderId) => {
           if (req.body["paymentMethod"] === "COD") {
             res.json({ COD_CHECKOUT: true });
@@ -1463,6 +1597,7 @@ const placeOrder = async (req, res) => {
     res.redirect("/error");
   }
 };
+
 const orderPlaced = async (req, res) => {
   try {
     res.render("users/orderPlaced", { layout: "userlayout" });
@@ -1678,6 +1813,97 @@ const verifyPayment = async (req, res) => {
 
       res.redirect("/error");
     });
+};
+const downloadInvoice = async (req, res) => {
+  try {
+    const id = req.query.id;
+    userId = res.locals.user._id;
+
+    result = await orderHelper.findOrder(id, userId);
+    console.log(result);
+    const date = result[0].date.toLocaleDateString();
+    const product = result[0].products;
+
+    const order = {
+      id: id,
+      total: parseInt(product.totalPrice),
+      date: date,
+      payment: result[0].paymentMethod,
+      name: result[0].addressDetails.name,
+      street: result[0].addressDetails.homeAddress,
+      locality: result[0].addressDetails.city,
+      city: result[0].addressDetails.street,
+      state: result[0].addressDetails.state,
+      pincode: result[0].addressDetails.postalCode,
+      product: result[0].products,
+    };
+
+    const products = order.product.map((product) => ({
+      quantity: parseInt(product.quantity),
+      description: product.productName,
+      "tax-rate": 0,
+      price: parseInt(product.productPrice),
+    }));
+
+    var data = {
+      customize: {},
+      images: {
+        // logo: "https://public.easyinvoice.cloud/img/logo_en_original.png",
+
+        background: "https://public.easyinvoice.cloud/img/watermark-draft.jpg",
+      },
+
+      sender: {
+        company: "Plant Story",
+        address: "Big world",
+        zip: "686633",
+        city: "Okalahoma",
+        country: "USA",
+      },
+
+      client: {
+        company: order.name,
+        address: order.street,
+        zip: order.pincode,
+        city: order.city,
+        // state:" <%=order.state%>",
+        country: "India",
+      },
+      information: {
+        number: order.id,
+
+        date: order.date,
+        // Invoice due date
+        "due-date": "Nil",
+      },
+
+      products: products,
+      // The message you would like to display on the bottom of your invoice
+      "bottom-notice": "Thank you,Keep shopping.",
+    };
+
+    easyinvoice.createInvoice(data, async function (result) {
+      //The response will contain a base64 encoded PDF file
+      await fs.writeFileSync("invoice.pdf", result.pdf, "base64");
+
+      // Set the response headers for downloading the file
+      res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="invoice.pdf"'
+      );
+      res.setHeader("Content-Type", "application/pdf");
+
+      // Create a readable stream from the PDF base64 string
+      const pdfStream = new Readable();
+      pdfStream.push(Buffer.from(result.pdf, "base64"));
+      pdfStream.push(null);
+
+      // Pipe the stream to the response
+      pdfStream.pipe(res);
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 module.exports = {
