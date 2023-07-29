@@ -34,7 +34,7 @@
                                 {{!-- <th scope="col">BRAND</th> --}}
                                
                                 <th scope="col">CATEGORY</th>
-                                <th scope="col">IMAGE</th>
+                                {{!-- <th scope="col">IMAGE</th> --}}
                                 {{!-- <th scope="col">OPTIONS</th> --}}
                                 
                                 <th scope="col">ACTION</th>
@@ -49,7 +49,7 @@
                                 <th class="align-middle" scope="row">{{this._id}}</th>
                                 
                                  <td class="align-middle">{{category}}</td>
-                                 <td class="align-middle"><img src="/uploads/{{image}}" alt="{{images}}" width="50px" height="50px"></td>
+                                 {{!-- <td class="align-middle"><img src="/uploads/{{image}}" alt="{{images}}" width="50px" height="50px"></td> --}}
                                   <td>
                                         {{#if is_activate }}
                       <a href="/admin/categoryInactivate?id={{this._id}}" class="btn btn-sucess" onclick="return confirm('Are you sure you want to Unlist {{this.name}}?')">Active</a>
@@ -86,15 +86,30 @@
             </div>
             <form action="/admin/category" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
+ {{#if error}}
+                  <div class="alert alert-danger" role="alert">
+                    
+                    {{error}}
+                  </div>
+                  <script>
+                    // Show the error message in an alert box
+                    window.onload = function() {
+                      setTimeout(function() {
+                        alert("This Category is already exit");
+                      }, 100);
+                    }
+                  </script>
+                {{/if}}
+
                      <div class="mb-3">
                          <label for="category" class="form-label">Category</label>
                         <input type="text" name="category" class="form-control" required>
                     </div>
               
-                <div class="mb-3">
+                {{!-- <div class="mb-3">
                          <label for="image" class="form-label">IMAGE</label>
                         <input type="file" name="image" class="form-control" required>
-                    </div>
+                    </div> --}}
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

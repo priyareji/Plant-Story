@@ -594,10 +594,32 @@ const getProductByPlant = async (req, res) => {
 ///await Product.find({ category: "Plants" }).
 const getProductBySeed = async (req, res) => {
   try {
-    const productData = await Product.find({
+    const { category, minPrice, maxPrice, sort } = req.query;
+    let query = {
       is_activate: true,
       category: "Seeds",
-    }).lean();
+    };
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (minPrice && maxPrice) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice) {
+      query.price = { $gte: minPrice };
+    } else if (maxPrice) {
+      query.price = { $lte: maxPrice };
+    }
+
+    let productData = await Product.find(query).lean();
+
+    if (sort === "price_asc") {
+      productData = productData.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      productData = productData.sort((a, b) => b.price - a.price);
+    } // Add more sorting options as needed
+
     const categoryData = await Category.find({ is_activate: true }).lean();
     const check = await Cart.findOne({ user_id: req.session.user_id });
     let sumOfQuantities = 0;
@@ -610,7 +632,7 @@ const getProductBySeed = async (req, res) => {
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
     let userid = req.session.user_id;
     const user = await User.find({ _id: userid }).lean();
-    res.render("users/plants", {
+    res.render("users/seeds", {
       layout: "userlayout",
       products: productData,
       category: categoryData,
@@ -622,12 +644,64 @@ const getProductBySeed = async (req, res) => {
     res.redirect("/error");
   }
 };
+
+//   try {
+//     const productData = await Product.find({
+//       is_activate: true,
+//       category: "Seeds",
+//     }).lean();
+//     const categoryData = await Category.find({ is_activate: true }).lean();
+//     const check = await Cart.findOne({ user_id: req.session.user_id });
+//     let sumOfQuantities = 0;
+//     if (check) {
+//       const cart = await Cart.findOne({ user_id: req.session.user_id }).lean();
+//       for (const product of cart.products) {
+//         sumOfQuantities += product.quantity;
+//       }
+//     }
+//     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
+//     let userid = req.session.user_id;
+//     const user = await User.find({ _id: userid }).lean();
+//     res.render("users/seeds", {
+//       layout: "userlayout",
+//       products: productData,
+//       category: categoryData,
+//       sumOfQuantities,
+//       user,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.redirect("/error");
+//   }
+// };
 const getProductByPot = async (req, res) => {
   try {
-    const productData = await Product.find({
+    const { category, minPrice, maxPrice, sort } = req.query;
+    let query = {
       is_activate: true,
       category: "Pots&Planters",
-    }).lean();
+    };
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (minPrice && maxPrice) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice) {
+      query.price = { $gte: minPrice };
+    } else if (maxPrice) {
+      query.price = { $lte: maxPrice };
+    }
+
+    let productData = await Product.find(query).lean();
+
+    if (sort === "price_asc") {
+      productData = productData.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      productData = productData.sort((a, b) => b.price - a.price);
+    } // Add more sorting options as needed
+
     const categoryData = await Category.find({ is_activate: true }).lean();
     const check = await Cart.findOne({ user_id: req.session.user_id });
     let sumOfQuantities = 0;
@@ -640,7 +714,7 @@ const getProductByPot = async (req, res) => {
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
     let userid = req.session.user_id;
     const user = await User.find({ _id: userid }).lean();
-    res.render("users/home", {
+    res.render("users/pots-and-planters", {
       layout: "userlayout",
       products: productData,
       category: categoryData,
@@ -654,10 +728,32 @@ const getProductByPot = async (req, res) => {
 };
 const getProductByPlantcare = async (req, res) => {
   try {
-    const productData = await Product.find({
+    const { category, minPrice, maxPrice, sort } = req.query;
+    let query = {
       is_activate: true,
-      category: "PlantCare",
-    }).lean();
+      category: "Plant Care",
+    };
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (minPrice && maxPrice) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice) {
+      query.price = { $gte: minPrice };
+    } else if (maxPrice) {
+      query.price = { $lte: maxPrice };
+    }
+
+    let productData = await Product.find(query).lean();
+
+    if (sort === "price_asc") {
+      productData = productData.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      productData = productData.sort((a, b) => b.price - a.price);
+    } // Add more sorting options as needed
+
     const categoryData = await Category.find({ is_activate: true }).lean();
     const check = await Cart.findOne({ user_id: req.session.user_id });
     let sumOfQuantities = 0;
@@ -670,7 +766,7 @@ const getProductByPlantcare = async (req, res) => {
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
     let userid = req.session.user_id;
     const user = await User.find({ _id: userid }).lean();
-    res.render("users/home", {
+    res.render("users/plantcare", {
       layout: "userlayout",
       products: productData,
       category: categoryData,

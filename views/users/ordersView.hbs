@@ -322,13 +322,15 @@
 
 
                                 <div class="sq align-self-center">
-                                    <img class="img-fluid  my-auto align-self-center mr-2 mr-md-4 pl-0 p-0 m-0"
-                                        src="/productImages/{{image}}" alt="{{image}}" width="135" height="135" />
+                                    {{!-- <img class="img-fluid  my-auto align-self-center mr-2 mr-md-4 pl-0 p-0 m-0"
+                                        src="/productImages/{{image}}" alt="{{image}}" width="135" height="135" /> --}}
+                                         <img src="/uploads/{{image}}" class="img-fluid" alt="Product Image"
+                                    width="50px" />
                                 </div>
                                 <div class="media-body my-auto text-right">
                                     <div class="row  my-auto flex-column flex-md-row">
                                         <div class="col my-auto">
-                                            <h6 class="mb-0">{{name}}</h6>
+                                            <h6 class="mb-0">{{productname}}</h6>
                                         </div>
                                         <div class="col my-auto">
                                             <small>Qty: {{quantity}}</small>

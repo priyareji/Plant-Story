@@ -455,39 +455,117 @@ const editProducts = async (req, res) => {
 //     throw new Error(error.message);
 //   }
 // },
-
 const addcategory = async (req, res) => {
   try {
-    const category = new Category({
-      category: req.body.category,
-      image: req.file.filename,
-      is_activate: true,
+    const category = req.body.category.toUpperCase();
+
+    const existingCategory = await Category.findOne({
+      category: { $regex: new RegExp("^" + category + "$", "i") },
     });
+    if (existingCategory) {
+      const errorMessage = "category already exits";
+      const updatedcategory = await Category.find().lean();
+      const categoryWithSerialNumber = updatedcategory.map(
+        (category, index) => ({
+          ...category,
+          serialNumber: index + 1,
+        })
+      );
 
-    console.log(category);
-    // const categoryWithSerialNumber = updatedProducts.map((product, index) => ({
-    //   ...category,
-    //   serialNumber: index + 1,
-    // }));
-
-    const categoryData = await category.save();
-    if (categoryData) {
-      // console.log(categoryData);
-
-      res.render("admin/category-manage", {
-        message: "Category Created  successfully",
-        layout: "adminLayout",
-      });
-    } else {
-      res.render("/admin/category-manage", {
-        message: "your registration has ben Failed",
-        layout: "adminLayout",
+      return res.render("admin/category-manage", {
+        layout: "adminlayout",
+        category: categoryWithSerialNumber,
+        error: errorMessage,
       });
     }
+    const newCategory = new Category({
+      category: category,
+    });
+    const categories = await newCategory.save();
+    return res.redirect("/admin/category");
   } catch (error) {
     console.log(error.message);
   }
 };
+
+// const addcategory = async (req, res) => {
+//   try {
+//     // const category = new Category({
+//     //   category: req.body.category.toUpperCase();
+//     //   image: req.file.filename,
+//     //   is_activate: true,
+//     // });
+//     const category = req.body.category.toUpperCase();
+
+//         const existingCategory = await Category.findOne({
+//           category: { $regex: new RegExp("^" + category + "$", "i") },
+//         });
+//         if (existingCategory) {
+//           const errorMessage = "category already exits";
+//           const updatedcategory = await Category.find().lean();
+//           const categoryWithSerialNumber = updatedcategory.map(
+//             (category, index) => ({
+//               ...category,
+//               serialNumber: index + 1,
+//             })
+//           );
+
+//     console.log(category);
+//     // const categoryWithSerialNumber = updatedProducts.map((product, index) => ({
+//     //   ...category,
+//     //   serialNumber: index + 1,
+//     // }));
+// const addCategory = async (req, res) => {
+//       try {
+//         const category = req.body.category.toUpperCase();
+
+//         const existingCategory = await Category.findOne({
+//           category: { $regex: new RegExp("^" + category + "$", "i") },
+//         });
+//         if (existingCategory) {
+//           const errorMessage = "category already exits";
+//           const updatedcategory = await Category.find().lean();
+//           const categoryWithSerialNumber = updatedcategory.map(
+//             (category, index) => ({
+//               ...category,
+//               serialNumber: index + 1,
+//             })
+//           );
+
+//           return res.render("admin/category", {
+//             // layouts: "admin-layout",
+//             category: categoryWithSerialNumber,
+//             error: errorMessage,
+//           });
+//         }
+//         const newCategory = new Category({
+//           category: category,
+//         });
+//         const categories = await newCategory.save();
+//         return res.redirect("/admin/category");
+//       } catch (error) {
+//         console.log(error.message);
+//       }
+//     };
+
+//     const categoryData = await category.save();
+//     if (categoryData) {
+//       // console.log(categoryData);
+
+//       res.render("admin/category-manage", {
+//         message: "Category Created  successfully",
+//         layout: "adminLayout",
+//       });
+//     } else {
+//       res.render("/admin/category-manage", {
+//         message: "your registration has ben Failed",
+//         layout: "adminLayout",
+//       });
+//     }
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// };
 const product_activate = async (req, res) => {
   try {
     const id = req.query.id;

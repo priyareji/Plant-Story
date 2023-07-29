@@ -4,7 +4,7 @@ const adminController = require("../controllers/adminController");
 const bcryptjs = require("bcrypt");
 const config = require("../config/config");
 const bodyParser = require("body-parser");
-
+const path = require("path");
 const adminAuth = require("../middleware/adminauth");
 const multer = require("multer");
 const multerr = require("../multer/multer");
@@ -46,7 +46,7 @@ router.get(
 );
 router.get("/unblocked-userlist", adminController.unblockUserlist);
 router.get("/product", adminAuth.adminIsLogin, adminController.loadproduct);
-router.post("/product", uploads.array("image", 5), adminController.addproduct);
+router.post("/product", uploads.array("image", 4), adminController.addproduct);
 router.get(
   "/editproduct",
   adminAuth.adminIsLogin,

@@ -24,7 +24,7 @@ router.get("/", auth.isLogout, userController.loadLogin);
 router.get("/login", auth.isLogout, userController.loadLogin);
 router.post("/login", userController.verifyLogin);
 router.get("/home", auth.isLogin, userController.loadHome);
-router.get("/logout", auth.isLogout, userController.userLogout);
+router.get("/logout", auth.isLogin, userController.userLogout);
 router.get("/forget", userController.forgetLoad);
 //router.get("/forget", auth.isLogOut, userController.forgetLoad);
 router.post("/forget", userController.sendResetLink);
