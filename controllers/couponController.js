@@ -3,6 +3,7 @@ const couponHelper = require("../helpers/adminHelper/coupenHelper");
 const userHelpers = require("../helpers/userHelper");
 const Coupon = require("../models/couponModel");
 const User = require("../models/userModel");
+const moment = require("moment-timezone");
 
 module.exports = {
   // get coupon
@@ -83,6 +84,8 @@ module.exports = {
   getCouponLists: (req, res) => {
     let admin = req.session.adminId;
     couponHelper.getCouponList().then((couponList) => {
+      // });
+
       res.render("admin/couponList", {
         layout: "adminlayout",
         admin,
@@ -90,10 +93,34 @@ module.exports = {
       });
     });
   },
+  // getCouponList: async (req, res) => {
+  //   try {
+  //     const couponList = await Coupon.find().lean();
+  //     console.log(couponList, "couponList....................");
+
+  //     res.render("admin/couponList", {
+  //       layout: "adminlayout",
+  //       couponList,
+  //     });
+  //   } catch (error) {
+  //     console.error(error.message);
+  //     res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
+  //   }
+  // },
+
   getCouponList: async (req, res) => {
     try {
       const couponList = await Coupon.find().lean();
+
+      // Format the validity date with the specified format and timezone
+      for (const coupon of couponList) {
+        coupon.validityFormatted = moment(coupon.validity)
+          .tz("Asia/Kolkata")
+          .format("DD-MM-YYYY h:mm A");
+      }
+
       console.log(couponList, "couponList....................");
+
       res.render("admin/couponList", {
         layout: "adminlayout",
         couponList,
@@ -103,6 +130,7 @@ module.exports = {
       res.render("error", { message: "Error loading user list" }); // Render an error page with a suitable error message
     }
   },
+
   removeCoupon: (req, res) => {
     let couponId = req.body.couponId;
     couponHelper.removeCoupon(couponId).then((response) => {
