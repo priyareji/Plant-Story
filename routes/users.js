@@ -73,6 +73,10 @@ router.get("/apply-coupon/:id", auth.isLogin, couponController.applyCoupon);
 router.get("/searchProduct", auth.isLogin, userController.searchProduct);
 router.get("/error", auth.isLogin, userController.errorPage);
 router.get("/wishlist", auth.isLogin, wishListController.wishList);
+/* ======================== Error handling page======================== */
+
+router.get("/error-page", auth.isLogin, userController.errorHandlerPageGET);
+router.get("/access-forbidden", userController.accessForbiddenPageGET);
 // router.get("/order-details", auth.isLogin, userController.orderDetails);
 // router.get("/ordersView", auth.isLogin, userController.loadOrdersView);
 // router.post("/cancel-order", userController.cancellOrder);

@@ -84,7 +84,7 @@ const verifyMail = async (req, res) => {
     res.render("users/email-verified", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 // Secure Password
@@ -128,7 +128,7 @@ const insertUser = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 // loading registration page
@@ -137,7 +137,7 @@ const loadRegister = async (req, res) => {
     res.render("users/registration", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 //loading login page
@@ -147,26 +147,26 @@ const loadLogin = async (req, res) => {
     res.render("users/login", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 //page
 // const errorPage = async (req, res) => {
 //   try {
-//     res.render("users/error", { layout: "userlayout" });
+//     res.render("users/error-page", { layout: "userlayout" });
 //   } catch (error) {
 //     console.log(error.message);
-//     res.redirect("/error");
+//     res.redirect("/error-page");
 //   }
 // };
 const errorPage = async (req, res) => {
   try {
     const userId = req.session.user_id;
     const userDetails = await User.findOne({ _id: userId }).lean();
-    res.render("users/error-404", { layout: "userlayout" });
+    res.render("users/error-page-404", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 // login verification
@@ -359,7 +359,7 @@ const sendOTP = async (req, res) => {
     }
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -430,7 +430,7 @@ const loadHome = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 //logout
@@ -440,7 +440,7 @@ const userLogout = async (req, res) => {
     res.redirect("/login");
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -535,7 +535,7 @@ const searchProduct = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const getProductByPlant = async (req, res) => {
@@ -587,7 +587,7 @@ const getProductByPlant = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -641,7 +641,7 @@ const getProductBySeed = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -671,7 +671,7 @@ const getProductBySeed = async (req, res) => {
 //     });
 //   } catch (error) {
 //     console.log(error);
-//     res.redirect("/error");
+//     res.redirect("/error-page");
 //   }
 // };
 const getProductByPot = async (req, res) => {
@@ -723,7 +723,7 @@ const getProductByPot = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const getProductByPlantcare = async (req, res) => {
@@ -775,7 +775,7 @@ const getProductByPlantcare = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 //load Product
@@ -861,7 +861,7 @@ const addToCart = async (req, res) => {
   } catch (error) {
     // Handle any errors that occurred during the process
     res.status(500).json({ error: error.message });
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -934,7 +934,7 @@ const viewaddToCart = async (req, res) => {
     }
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const changeProductQuantity = async (req, res) => {
@@ -1029,7 +1029,7 @@ const changeProductQuantity = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1052,7 +1052,7 @@ const viewuserProfile = async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1098,7 +1098,7 @@ const editUser = async (req, res) => {
     res.redirect("/user-profile");
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const loadAddressList = async (req, res) => {
@@ -1135,7 +1135,7 @@ const loadAddressList = async (req, res) => {
     }
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1182,7 +1182,7 @@ const addingAddress = async (req, res) => {
     res.redirect("/address");
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1229,7 +1229,7 @@ const addingNewAddress = async (req, res) => {
     res.redirect("/checkout");
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1271,7 +1271,7 @@ const deletingAddress = async (req, res) => {
     res.redirect("/address");
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1320,7 +1320,7 @@ const editingAddress = async (req, res) => {
   } catch (error) {
     console.error("Error updating address:", error);
     // Handle the error appropriately
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1352,7 +1352,7 @@ const settingAsDefault = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to set address as default" });
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1427,7 +1427,7 @@ const loadingCheckoutPage = async (req, res) => {
     });
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1452,7 +1452,7 @@ const changingTheAddress = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to set address as default" });
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1573,7 +1573,7 @@ const changingTheAddress = async (req, res) => {
 //     }
 //   } catch (error) {
 //     console.log(error.message);
-//     res.redirect("/error");
+//     res.redirect("/error-page");
 //   }
 // };
 
@@ -1627,7 +1627,7 @@ const changingTheAddress = async (req, res) => {
 //     }
 //   } catch (error) {
 //     console.log(error.message);
-//     res.redirect("/error");
+//     res.redirect("/error-page");
 //   }
 // };
 
@@ -1690,7 +1690,7 @@ const placeOrder = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1699,7 +1699,7 @@ const orderPlaced = async (req, res) => {
     res.render("users/orderPlaced", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const orderFailed = async (req, res) => {
@@ -1707,7 +1707,7 @@ const orderFailed = async (req, res) => {
     res.render("users/orderFailed", { layout: "userlayout" });
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1750,7 +1750,7 @@ const orderDetails = async (req, res) => {
     });
   } catch (error) {
     throw new Error(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1839,7 +1839,7 @@ const loadOrdersView = async (req, res) => {
     await userHelpers.loadingOrdersViews(req, res);
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1854,7 +1854,7 @@ const cancellOrder = async (req, res) => {
     res.redirect(url);
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 const returnOrder = async (req, res) => {
@@ -1868,7 +1868,7 @@ const returnOrder = async (req, res) => {
     res.redirect(url);
   } catch (error) {
     console.log(error.message);
-    res.redirect("/error");
+    res.redirect("/error-page");
   }
 };
 
@@ -1907,7 +1907,7 @@ const verifyPayment = async (req, res) => {
           });
       }
 
-      res.redirect("/error");
+      res.redirect("/error-page");
     });
 };
 const downloadInvoice = async (req, res) => {
@@ -2001,6 +2001,42 @@ const downloadInvoice = async (req, res) => {
     console.log(error.message);
   }
 };
+const errorHandlerPageGET = (req, res) => {
+  try {
+    const user = req.session.userSession;
+
+    res.render("users/user-404", {
+      layout: "userlayout",
+    });
+  } catch (error) {
+    console.log("Error from errorHandlerPageGET userController: ", error);
+
+    const errorMessage = " Something went wrong!!!, It's an Error ";
+    const instructionForUser =
+      " Hi there, just grab a cup of coffee for now & visit the website after sometime, we'll fix it for you by then. ";
+
+    // If ERROR HANDLING PAGE REQUEST FAILED, Send a response to client indicating server error
+    res.status(500).json({
+      Server_Error: errorMessage,
+      Required_Action: instructionForUser,
+    });
+  }
+};
+const accessForbiddenPageGET = (req, res) => {
+  try {
+    const user = req.session.userSession;
+
+    if (user) {
+      res.render("users/error-access-forbidden", { layout: "userlayout" });
+    } else {
+      res.render("users/error-access-forbidden", { layout: "userlayout" });
+    }
+  } catch (error) {
+    console.log("Error from accessForbiddenPageGET userController: ", error);
+
+    res.redirect("/error-page");
+  }
+};
 
 module.exports = {
   loadRegister,
@@ -2043,4 +2079,6 @@ module.exports = {
   orderFailed,
   searchProduct,
   returnOrder,
+  errorHandlerPageGET,
+  accessForbiddenPageGET,
 };
