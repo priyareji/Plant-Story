@@ -409,6 +409,8 @@ const loadHome = async (req, res) => {
     const productData = await Product.find({ is_activate: true }).lean();
     const categoryData = await Category.find({ is_activate: true }).lean();
     const check = await Cart.findOne({ user_id: req.session.user_id });
+    const isLogin = req.session.user_id ? true : false;
+    console.log(isLogin);
     //let user = await User.findOne({ user_id: req.session.user_id });
     let userid = req.session.user_id;
     const user = await User.find({ _id: userid }).lean();
@@ -421,13 +423,24 @@ const loadHome = async (req, res) => {
       }
     }
     console.log("Sum of quantities:++++++++++++++++++++", sumOfQuantities);
-    res.render("users/home", {
-      layout: "userlayout",
-      user,
-      products: productData,
-      category: categoryData,
-      sumOfQuantities,
-    });
+    if (isLogin) {
+      res.render("users/home", {
+        layout: "userlayout",
+        user: user,
+        products: productData,
+        category: categoryData,
+        sumOfQuantities,
+        isLogin,
+      });
+    } else {
+      res.render("users/home", {
+        layout: "userlayout",
+        products: productData,
+        category: categoryData,
+        sumOfQuantities,
+        isLogin,
+      });
+    }
   } catch (error) {
     console.log(error);
     res.redirect("/error-page");
@@ -1633,6 +1646,69 @@ const changingTheAddress = async (req, res) => {
 
 //////////////////////////////
 
+const userWishlistGET = async (req, res) => {
+  try {
+    const user = req.session.userSession;
+
+    const userId = req.session.userSession._id;
+
+    const cartCount = await userHelpers.getCartCount(userId);
+
+    const userWishlistData = await userHelpers.getUserWishListData(userId);
+
+    const wishlistCount = await userHelpers.getWishlistCount(userId);
+
+    if (userWishlistData != null) {
+      res.render("user/manage-wishlist", {
+        layout: "user-layout",
+        title: user.name + "'s " + PLATFORM_NAME + " || Wishlist",
+        PLATFORM_NAME,
+        user,
+        cartCount,
+        wishlistCount,
+        userWishlistData,
+      });
+    } else {
+      res.render("user/manage-wishlist", {
+        layout: "user-layout",
+        title: user.name + "'s " + PLATFORM_NAME + " || Wishlist",
+        PLATFORM_NAME,
+        user,
+        cartCount,
+        wishlistCount,
+      });
+    }
+  } catch (error) {
+    console.log("Error from userWishlistGET controller : ", error);
+
+    res.redirect("/error-page");
+  }
+};
+
+const modifyUserWishlistPOST = async (req, res) => {
+  try {
+    const user = req.session.userSession;
+
+    const userId = user._id;
+
+    const productId = req.body.productId;
+
+    await userHelpers
+      .addOrRemoveFromWishList(productId, userId)
+      .then((response) => {
+        if (response.status) {
+          res.status(200).json({ status: "added" });
+        } else if (response.removed) {
+          res.status(200).json({ status: "removed" });
+        }
+      });
+  } catch (error) {
+    console.log("Error from modifyUserWishlistPOST controller : ", error);
+
+    res.redirect("/error-page");
+  }
+};
+
 const placeOrder = async (req, res) => {
   try {
     console.log("enter---------");
@@ -2081,4 +2157,6 @@ module.exports = {
   returnOrder,
   errorHandlerPageGET,
   accessForbiddenPageGET,
+  userWishlistGET,
+  modifyUserWishlistPOST,
 };

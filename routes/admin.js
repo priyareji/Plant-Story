@@ -26,10 +26,12 @@ const Storage = multer.diskStorage({
 });
 
 const uploads = multer({ storage: Storage });
+//=============================login & =================================================//
 
 router.get("/", adminAuth.adminIsLogout, adminController.loadLogin);
 router.post("/login", adminController.verifyLogin);
-// router.post("/logout", adminAuth.adminIsLogout, adminController.logout);
+router.post("/logout", adminAuth.adminIsLogout, adminController.logout);
+//==============================load home================================================//
 router.get("/home", adminAuth.adminIsLogin, adminController.loadDashboard);
 router.get(
   "/user-manage",

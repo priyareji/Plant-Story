@@ -11,6 +11,9 @@ const bodyParser = require("body-parser");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const adminHelpers = require("../helpers/adminHelper/adminHelper");
+const fs = require("fs");
+const pdfPrinter = require("pdfmake");
+const exceljs = require("exceljs");
 
 const Storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -1153,11 +1156,185 @@ const downloadSalesReport = async (req, res) => {
     res.redirect("/admin/admin-error");
   }
 };
+// let generatePdf = async (order, totalAmount, res) => {
+//   const startY = 150;
+//   const writeStream = fs.createWriteStream("order.pdf");
+//   const printer = new pdfPrinter({
+//     Roboto: {
+//       normal: "Helvetica",
+//       bold: "Helvetica-Bold",
+//       italics: "Helvetica-Oblique",
+//       bolditalics: "Helvetica-BoldOblique",
+//     },
+//   });
+
+//   let dateOptions = { year: "numeric", month: "long", day: "numeric" };
+//   // Create document definition for PDF
+//   let docDefinition = {
+//     content: [
+//       { text: "Plant Story", style: "header" },
+//       { text: "\n" },
+//       { text: "Order Information", style: "header1" },
+//       { text: "\n" },
+//       { text: "\n" },
+//     ],
+//     styles: {
+//       header: {
+//         fontSize: 25,
+//         alignment: "center",
+//       },
+//       header1: {
+//         fontSize: 12,
+//         alignment: "center",
+//       },
+//       total: {
+//         fontSize: 18,
+//         alignment: "center",
+//       },
+//     },
+//   };
+
+//   // Create the table data for PDF
+//   let tableBody = [
+//     ["Index", "Date", "User", "Status", "Method", "Amount"], // Table header
+//   ];
+
+//   for (let i = 0; i < order.length; i++) {
+//     const data = order[i];
+//     const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+//       new Date(data.date)
+//     );
+//     tableBody.push([
+//       (i + 1).toString(), // Index value
+//       formattedDate,
+//       data.userId.name,
+//       data.orderStatus,
+//       data.paymentMethod,
+//       data.orderValue,
+//     ]);
+//   }
+
+//   let table = {
+//     table: {
+//       widths: ["auto", "auto", "auto", "auto", "auto", "auto"],
+//       headerRows: 1,
+//       body: tableBody,
+//     },
+//   };
+
+//   // Add the table to the document definition for PDF
+//   docDefinition.content.push(table);
+//   docDefinition.content.push([
+//     { text: "\n" },
+//     {
+//       text: `Total: ${totalAmount[0]?.totalAmount || 0}`,
+//       style: "total",
+//     },
+//   ]);
+
+//   // Generate PDF from the document definition
+//   let pdfDoc = printer.createPdfKitDocument(docDefinition);
+
+//   // Pipe the PDF document to a write stream
+//   pdfDoc.pipe(writeStream);
+
+//   // Finalize the PDF and end the stream
+//   pdfDoc.end();
+
+//   writeStream.on("finish", () => {
+//     res.download("order.pdf", "order.pdf");
+//   });
+// };
+
+// let generateExcel = async (order, totalAmount, res) => {
+//   const workbook = new exceljs.Workbook();
+//   const worksheet = workbook.addWorksheet("Sales Report");
+
+//   // Add column headers to the worksheet
+//   worksheet.addRow(["Index", "Date", "User", "Status", "Method", "Amount"]);
+
+//   for (let i = 0; i < order.length; i++) {
+//     const data = order[i];
+//     const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+//       new Date(data.date)
+//     );
+
+//     // Add row data to the worksheet
+//     worksheet.addRow([
+//       (i + 1).toString(), // Index value
+//       formattedDate,
+//       data.userId.name,
+//       data.orderStatus,
+//       data.paymentMethod,
+//       data.orderValue,
+//     ]);
+//   }
+
+//   // Add the total amount to the worksheet
+//   worksheet.addRow([
+//     "",
+//     "",
+//     "",
+//     "",
+//     "Total:",
+//     totalAmount[0]?.totalAmount || 0,
+//   ]);
+
+//   // Set the column widths to auto-fit the content
+//   worksheet.columns.forEach((column) => {
+//     column.width = column.header.length < 12 ? 12 : column.header.length;
+//   });
+
+//   const buffer = await workbook.xlsx.writeBuffer();
+//   res.setHeader(
+//     "Content-Type",
+//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//   );
+//   res.setHeader(
+//     "Content-Disposition",
+//     "attachment; filename=sales_report.xlsx"
+//   );
+//   res.send(buffer);
+// };
+
+// const downloadSalesReport = (req, res) => {
+//   try {
+//     Promise.all([
+//       Order.find({ orderStatus: { $in: ["Placed", "Delivered"] } }).populate(
+//         "userId"
+//       ),
+//       Order.aggregate([
+//         {
+//           $match: {
+//             orderStatus: { $nin: ["cancelled"] },
+//           },
+//         },
+//         {
+//           $group: {
+//             _id: null,
+//             totalAmount: { $sum: "$orderValue" },
+//           },
+//         },
+//       ]),
+//     ])
+//       .then(([order, totalAmount]) => {
+//         generatePdf(order, totalAmount, res);
+//         generateExcel(order, totalAmount, res);
+//       })
+//       .catch((error) => {
+//         console.log("Sales report generation error:", error);
+//         res.status(500).send("Error generating sales report");
+//       });
+//   } catch (error) {
+//     console.log("pdfSales helper error");
+//     res.status(500).send("Error generating sales report");
+//   }
+// };
 
 module.exports = {
   loadLogin,
   verifyLogin,
-  // logout,
+  logout,
   loadDashboard,
   loadUserManage,
   editUser,

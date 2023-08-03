@@ -88,7 +88,45 @@ module.exports = {
       });
     });
   },
+  getUserWishListData: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const pipeline = [
+          { $match: { userId: ObjectId(userId) } },
 
+          {
+            $lookup: {
+              from: collections.PRODUCT_COLLECTION,
+
+              localField: "products",
+
+              foreignField: "_id",
+
+              as: "products",
+            },
+          },
+
+          { $project: { products: 1 } },
+        ];
+
+        const userWishListData = await db
+          .get()
+          .collection(collections.WISH_LIST_COLLECTION)
+          .aggregate(pipeline)
+          .toArray();
+
+        if (userWishListData.length > 0) {
+          resolve(userWishListData[0].products);
+        } else {
+          resolve([]);
+        }
+      } catch (error) {
+        console.error("Error from getUserWishListData user-helpers: ", error);
+
+        reject(error);
+      }
+    });
+  },
   verifyOnlinePayment: (paymentData) => {
     // console.log(paymentData);
     console.log(

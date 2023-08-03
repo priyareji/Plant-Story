@@ -20,7 +20,7 @@ router.get("/register", auth.isLogout, userController.loadRegister);
 router.post("/register", userController.insertUser);
 router.get("/verify", userController.verifyMail);
 router.get("/register", auth.isLogout, userController.loadRegister);
-router.get("/", auth.isLogout, userController.loadLogin);
+router.get("/", userController.loadHome);
 router.get("/login", auth.isLogout, userController.loadLogin);
 router.post("/login", userController.verifyLogin);
 router.get("/home", auth.isLogin, userController.loadHome);
@@ -72,7 +72,17 @@ router.get("/coupon-verify/:id", auth.isLogin, couponController.verifyCoupon);
 router.get("/apply-coupon/:id", auth.isLogin, couponController.applyCoupon);
 router.get("/searchProduct", auth.isLogin, userController.searchProduct);
 router.get("/error", auth.isLogin, userController.errorPage);
-router.get("/wishlist", auth.isLogin, wishListController.wishList);
+
+/* ========================Wishlist Route======================== */
+
+router.get("/wishlist", userController.userWishlistGET);
+
+router.post(
+  "/modify-wishlist",
+
+  userController.modifyUserWishlistPOST
+);
+
 /* ======================== Error handling page======================== */
 
 router.get("/error-page", auth.isLogin, userController.errorHandlerPageGET);
